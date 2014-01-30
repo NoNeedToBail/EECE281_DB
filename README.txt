@@ -7,3 +7,6 @@ PWN.asm - code for setting temperature.
 Responsibility of: Dylan + Alex
 Temp.asm - code for getting temperature readings.
 Responsibility of: Ty + Vasily
+
+
+LETS TRY TO MAKE CHANGES!!!!
