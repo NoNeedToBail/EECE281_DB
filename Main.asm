@@ -8,6 +8,7 @@ $modde2
 DSEG at 30h
 	temperature:	ds	1
 	desiredTemp:	ds	1
+	timeToReach:	ds	1
 
 BSEG
 	donePWM:	dbit	1
