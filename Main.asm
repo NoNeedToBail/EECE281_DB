@@ -11,5 +11,7 @@ DSEG at 30h
 
 BSEG
 	donePWM:	dbit	1
+	
+CSEG
 
 END
