@@ -9,4 +9,4 @@ Temp.asm - code for getting temperature readings.
 Responsibility of: Ty + Vasily
 
 
-LETS TRY TO MAKE CHANGES!!!!
+LETS TRY TO MAKE CHANGES!!!! Agreed
