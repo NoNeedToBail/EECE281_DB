@@ -124,7 +124,7 @@ decTskTime:
 	;waiting on Alex's lab code
 	
 ;InitTimer0 - initialization for timer 0
-	
+;SET STUFF TO 0
 InitTimer0:
 	mov a, TMOD
 	anl a, #0f0h
