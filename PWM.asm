@@ -124,8 +124,16 @@ decTskTime:
 	;waiting on Alex's lab code
 	
 ;InitTimer0 - initialization for timer 0
-;SET STUFF TO 0
+
 InitTimer0:
+	mov unimin, #0
+	mov unisec, #0
+	mov tskmin, #0
+	mov tsksec, #0
+	clr pwmdone
+	clr holding
+	mov desiredTemp, #20
+	
 	mov a, TMOD
 	anl a, #0f0h
 	orl a, #1	;putting timer0 in 16 bit timer mode
