@@ -1,4 +1,3 @@
-$MODDE2
 $NOLIST
 
 ;==============================================================
@@ -12,12 +11,6 @@ $NOLIST
 ; Holding
 ;==============================================================
 
-PWR EQU P0.0
-CLK EQU 33333333
-T0_Freq EQU 50
-T0_RELOAD EQU 65536-(CLK/(12*T0_Freq))
-RANGE EQU 5
-
 ;SetTemp - Ramps to desired temp then sets PWMDone
 
 SetTemp MAC
@@ -26,7 +19,7 @@ SetTemp MAC
 	clr holding
 	ENDMAC
 	
-;HoldTemp - holds the temp for the desired length then sets PWMDone
+;HoldTemp - holds the temp for (minutes, seconds) then sets PWMDone
 	
 HoldTemp MAC
 	mov Tskmin, %0
@@ -73,7 +66,7 @@ rampf:
 	lcall tempadjust
 	clr c
 ;maybe change this to be more efficient later?
-	mov a, Range
+	mov a, #Range
 	subb a, difference
 	jnc doneRamp
 	ret
@@ -103,7 +96,7 @@ tempAdjust:
 	mov a, temperature
 	subb a, desiredtemp
 	mov difference, a
-	jb acc.7, 2comp
+	jb acc.7, twoscomp
 pos:
 	jnc toohot
 toocold:
@@ -112,7 +105,7 @@ toocold:
 toohot:
 	clr PWR
 	ret
-2comp:
+twoscomp:
 	cpl a
 	inc a
 	mov difference, a
