@@ -23,13 +23,20 @@ RANGE EQU 5
 org 0000H
 	ljmp myprogram
 	
-org 000BH				;probs need to change this
+org 000BH
+	lcall PWMISR
+	reti
+	
+org 001BH
 	ljmp ISR_timer1
 
 $include(PWM.asm)
 $include(math16.asm)
 
 DSEG at 30h
+	x:				ds	2
+	y:				ds	2
+	bcd:			ds	3
 	temperature:	ds	1
 
 	;PWM Variables - don't touch!
@@ -42,11 +49,11 @@ DSEG at 30h
 	count:			ds	1
 	difference:		ds	1
 	
+	;Main Variables
 	soakTemp:		ds	1
 	soakTempBCD:	ds	2
 	soakTimeSec:	ds	1
 	soakTimeMin:	ds	1
-	
 	reflowTemp:		ds	1
 	reflowTempBCD:	ds	2
 	reflowTimeSec:	ds	1
@@ -56,6 +63,8 @@ BSEG
 	PWMdone:	dbit	1
 	holding:	dbit	1
 	buzzer:		dbit    1		;turn on to get buzzer
+	mf:			dbit	1
+	emergency:	dbit	1
 	
 CSEG
 
@@ -98,19 +107,22 @@ s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	setTemp(soakTemp)
 	lcall buzz1Sec
 s1_loop:
+	jb emergency, s0_idle
 	jnb Pwmdone, s1_loop	
 	
 s2_Soak:
 	HoldTemp(soakTimeMin, soakTimeSec)
 	lcall buzz1Sec
 s2_loop:
-	jb Pwmdone, s3_ramptopeak
+	jb emergency, s0_idle
+	jnb Pwmdone, s2_loop
 
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
 	SetTemp(ReflowTemp)
 	lcall buzz1Sec
 s3_loop:
-	jb Pwmdone, s4_reflow
+	jb emergency, s0_idle
+	jnb Pwmdone, s3_loop
 
 s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
@@ -118,39 +130,48 @@ s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
 	lcall buzz1Sec
 	lcall buzz1Sec
 s4_loop:
-	jb Pwmdone, s5_cooling
+	jb emergency, s0_idle
+	jnb Pwmdone, s4_loop
 
 s5_Cooling: 			;moves to s6_SetVars when temp is less than 60 degrees
 	setTemp(#60)
-	push R0
+	push acc
+	mov a, R0
+	push acc
 Cooling_Buzzer:
 	mov R0, #6
 	lcall buzz1sec
 	lcall wait1sec
 	djnz R0, Cooling_buzzer
+	pop acc
+	mov R0, a
+	pop acc
 s5_loop:
-	jb Pwmdone, s0_idle
+	jb emergency, s0_idle
+	jnb Pwmdone, s5_loop
+	ljmp s0_idle
 
 s6_SetVars: 			;moves back to s0_Idle after all varibles have been set/after buton pushed
 	jnb KEY.2, s6_SetVars
+	ljmp s0_idle
 	
-;===============================================================
-; THE END OF THE STATE MACHINE. wE'LL BE HERE ALL WEEK.
-;===============================================================
+;=================================================================
+; THE END OF THE STATE MACHINE. THANK YOU. WE'LL BE HERE ALL WEEK.
+;=================================================================
 	
 ISR_timer1:			;needs more work
+	push acc
 	mov TH1, #high(TIMER1_RELOAD)
     mov TL1, #low(TIMER1_RELOAD)
-    ;if Key 1 pressed, reset to Idle state
-    ;make sure all the varibles are 
     
-    mov a, SWC ; Read switches 17 and 16
-	jb acc.1, s0_Idle ;jumps to s0_Idle if 
+    jb KEY.1, BuzzerCheck
+    setb Emergency
     
-    ;compliment if buzzer is suposed to go off
+BuzzerCheck:
     jnb buzzer, nobuzzer
     cpl BUZZERPIN
 nobuzzer:
+	pop acc
 	reti
 	
 Wait1Sec:
