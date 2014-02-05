@@ -10,6 +10,7 @@ $modde2
 ;Universal
 CLK EQU 33333333
 ;Main
+BUZZERPIN EQU P0.1
 FREQ_1 EQU 2000
 TIMER1_RELOAD EQU 65536-(CLK/(12*2*FREQ_1))
 ;PWM
@@ -26,6 +27,7 @@ org 000BH				;probs need to change this
 	ljmp ISR_timer1
 
 $include(PWM.asm)
+$include(math16.asm)
 
 DSEG at 30h
 	temperature:	ds	1
@@ -74,56 +76,67 @@ myprogram:
 	mov HEX1, a
 	mov HEX0, a
 	
-	mov P0MOD, #00000001B ; P0.0 is output used for buzzer 
-	setb P0.0
-	mov TMOD,  #00010000B ; GATE=0, C/T*=0, M1=0, M0=1: 16-bit timer
-	clr TR1 ; Disable timer 1
-	clr TF1
-    mov TH1, #high(TIMER1_RELOAD)
-    mov TL1, #low(TIMER1_RELOAD)
-    setb TR1 ; Enable timer 1
-    setb ET1 ; Enable timer 1 interrupt
-
+	lcall InitTimer0
+	lcall InitTimer1
+	
+	mov P0MOD, #00000011B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
 	setb EA  ; Enable all interrupts
+	
+;===============================================================
+; THE STATE MACHINE, LADIES AND GENTLEMEN.
+;===============================================================
 	
 s0_Idle: 				;state we reset to when stop buton/switch pressed
 	SetTemp(#0)
 		 					
 	jnb KEY.3, s1_RampToSoak ; if Key 3 pressed, jumps to s1_RampToSoak
 	jnb KEY.2, s6_SetVars 		 ; if Key 2 pressed, jumps s6_SetVars 
-	sjmp s0_Idle
-		 
+	sjmp s0_Idle 
 		 
 s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	jnb KEY.3, s1_RampToSoak
 	setTemp(soakTemp)
+	lcall buzz1Sec
 s1_loop:
 	jnb Pwmdone, s1_loop	
 	
 s2_Soak:
 	HoldTemp(soakTimeMin, soakTimeSec)
+	lcall buzz1Sec
 s2_loop:
 	jb Pwmdone, s3_ramptopeak
 
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
 	SetTemp(ReflowTemp)
+	lcall buzz1Sec
 s3_loop:
 	jb Pwmdone, s4_reflow
 
 s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
+	lcall buzz1Sec
+	lcall buzz1Sec
+	lcall buzz1Sec
 s4_loop:
 	jb Pwmdone, s5_cooling
 
 s5_Cooling: 			;moves to s6_SetVars when temp is less than 60 degrees
 	setTemp(#60)
+	push R0
+Cooling_Buzzer:
+	mov R0, #6
+	lcall buzz1sec
+	lcall wait1sec
+	djnz R0, Cooling_buzzer
 s5_loop:
 	jb Pwmdone, s0_idle
 
 s6_SetVars: 			;moves back to s0_Idle after all varibles have been set/after buton pushed
 	jnb KEY.2, s6_SetVars
 	
-	;Need to include display function and lookup table for 7 segment display
+;===============================================================
+; THE END OF THE STATE MACHINE. wE'LL BE HERE ALL WEEK.
+;===============================================================
 	
 ISR_timer1:			;needs more work
 	mov TH1, #high(TIMER1_RELOAD)
@@ -136,8 +149,53 @@ ISR_timer1:			;needs more work
     
     ;compliment if buzzer is suposed to go off
     jnb buzzer, nobuzzer
-    cpl P0.0
+    cpl BUZZERPIN
 nobuzzer:
 	reti
+	
+Wait1Sec:
+	push acc
+	mov a, R0
+	push acc
+	mov a, R1
+	push acc
+	mov a, R2
+	push acc
+	mov R0, #180
+WaitL0:
+	mov R1, #250
+WaitL1:
+	mov R2, #250
+WaitL2:
+	djnz R2, WaitL2
+	djnz R1, WaitL1
+	djnz R0, WaitL0
+	pop acc
+	mov R2, a
+	pop acc
+	mov R1, a
+	pop acc
+	mov R0, a
+	pop acc
+	ret
+	
+Buzz1Sec:
+	setb buzzer
+	lcall Wait1Sec
+	clr buzzer
+	ret
+	
+InitTimer1:
+	mov a, TMOD
+	anl a, #0Fh
+	orl a, #00010000b
+	mov TMOD, a
+	clr TR1 ; Disable timer 1
+	clr TF1
+    mov TH1, #high(TIMER1_RELOAD)
+    mov TL1, #low(TIMER1_RELOAD)
+    setb TR1 ; Enable timer 1
+    setb ET1 ; Enable timer 1 interrupt
+    ret
 	
 END
