@@ -1,8 +1,8 @@
 ;=============================================================================
 ; Main.asm
 ; UI code and runnable file for the reflow oven controller.
-; States have been created and commented.
-; Need to implemnt the states and control flow between them
+; State machine up and running.
+; Need code for LCD and 7-seg displays.
 ;=============================================================================
 
 $modde2
