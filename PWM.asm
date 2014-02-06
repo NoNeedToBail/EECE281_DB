@@ -114,7 +114,41 @@ twoscomp:
 ;DecTskTime - decrements the time left for holding
 
 decTskTime:
-	;waiting on Alex's lab code
+
+	mov a, tsksec
+	dec a
+	mov tsksec, a
+	
+	cjne a, #11111111b , noRollBack
+	mov tsksec, #01011001b
+	mov a, tskmin
+	dec a
+	mov tskmin, a
+	cjne a, #11111111b, noRollbackMin
+	sjmp noManualDAMin
+	
+noRollBackMin:
+	anl a, #0fh
+	cjne a, #00001111b, noManualDA
+	clr c
+	mov a, tskmin
+	subb a, #06
+	mov tskmin, a 
+	
+noManualDAMin:
+	mov a, tsksec
+	
+noRollBack:
+    anl a, #0fh
+	cjne a, #00001111b, noManualDA
+	clr c
+	mov a, tsksec
+	subb a, #06
+	mov tsksec, a 	
+	
+noManualDA:
+	ret
+	
 	
 ;InitTimer0 - initialization for timer 0
 
