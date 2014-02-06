@@ -31,6 +31,7 @@ org 001BH
 	ljmp ISR_timer1
 
 $include(PWM.asm)
+$include(LCD.asm)
 $include(math16.asm)
 
 DSEG at 30h
@@ -58,6 +59,11 @@ DSEG at 30h
 	reflowTempBCD:	ds	2
 	reflowTimeSec:	ds	1
 	reflowTimeMin:	ds	1
+	state:			ds	1
+	
+	;LCD Variables
+	timer1_count:	ds	1
+	digits:			ds	1
 
 BSEG
 	PWMdone:	dbit	1
@@ -99,7 +105,9 @@ s0_Idle: 				;state we reset to when stop buton/switch pressed
 	SetTemp(#0)
 		 					
 	jnb KEY.3, s1_RampToSoak ; if Key 3 pressed, jumps to s1_RampToSoak
-	jnb KEY.2, s6_SetVars 		 ; if Key 2 pressed, jumps s6_SetVars 
+	jnb KEY.2, s6_SetVars 		 ; if Key 2 pressed, jumps s6_SetVars
+	
+	lcall Display_LCD_L0
 	sjmp s0_Idle 
 		 
 s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
@@ -164,6 +172,10 @@ ISR_timer1:			;needs more work
 	mov TH1, #high(TIMER1_RELOAD)
     mov TL1, #low(TIMER1_RELOAD)
     
+    djnz timer1_count, noclear
+    lcall clear_screen
+    mov timer1_count, #200
+NoClear:
     jb KEY.1, BuzzerCheck
     setb Emergency
     
@@ -207,6 +219,7 @@ Buzz1Sec:
 	ret
 	
 InitTimer1:
+	mov timer1_count, #200
 	mov a, TMOD
 	anl a, #0Fh
 	orl a, #00010000b
