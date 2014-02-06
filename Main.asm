@@ -113,49 +113,55 @@ s0_Idle: 				;state we reset to when stop buton/switch pressed
 s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	jnb KEY.3, s1_RampToSoak
 	setTemp(soakTemp)
+	lcall Display_LCD_L1
 	lcall buzz1Sec
 s1_loop:
 	jb emergency, s0_idle
+	lcall Display_LCD_L1
 	jnb Pwmdone, s1_loop	
 	
 s2_Soak:
 	HoldTemp(soakTimeMin, soakTimeSec)
+	lcall Display_LCD_L2
 	lcall buzz1Sec
 s2_loop:
 	jb emergency, s0_idle
+	lcall Display_LCD_L2
 	jnb Pwmdone, s2_loop
 
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
 	SetTemp(ReflowTemp)
+	lcall Display_LCD_L3
 	lcall buzz1Sec
 s3_loop:
 	jb emergency, s0_idle
+	lcall Display_LCD_L3
 	jnb Pwmdone, s3_loop
 
 s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
+	lcall Display_LCD_L4
 	lcall buzz1Sec
 	lcall buzz1Sec
 	lcall buzz1Sec
 s4_loop:
 	jb emergency, s0_idle
+	lcall Display_LCD_L4
 	jnb Pwmdone, s4_loop
 
 s5_Cooling: 			;moves to s6_SetVars when temp is less than 60 degrees
 	setTemp(#60)
-	push acc
-	mov a, R0
-	push acc
+	lcall Display_LCD_DOOR
+	push AR0
 Cooling_Buzzer:
 	mov R0, #6
 	lcall buzz1sec
 	lcall wait1sec
 	djnz R0, Cooling_buzzer
-	pop acc
-	mov R0, a
-	pop acc
+	pop AR0
 s5_loop:
 	jb emergency, s0_idle
+	lcall Display_LCD_L5
 	jnb Pwmdone, s5_loop
 	ljmp s0_idle
 
