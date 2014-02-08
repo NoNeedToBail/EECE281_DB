@@ -9,16 +9,27 @@ $modde2
 
 ;Universal
 CLK EQU 33333333
+
 ;Main
 BUZZERPIN EQU P0.1
 FREQ_1 EQU 2000
 TIMER1_RELOAD EQU 65536-(CLK/(12*2*FREQ_1))
+
 ;PWM
 PWR EQU P0.0
 T0_Freq EQU 50
 T0_RELOAD EQU 65536-(CLK/(12*T0_Freq))
 RANGE EQU 5
 
+;TempDisp
+BAUD   EQU 115200
+T2LOAD EQU 65536-(CLK/(32*BAUD))
+MISO   EQU  P0.0 
+MOSI   EQU  P0.1 
+SCLK   EQU  P0.2
+CE_ADC EQU  P0.3
+CE_EE  EQU  P0.4
+CE_RTC EQU  P0.5
 
 org 0000H
 	ljmp myprogram
@@ -29,10 +40,14 @@ org 000BH
 	
 org 001BH
 	ljmp ISR_timer1
+	
+org 002Bh
+	ljmp ISR_timer2
 
 $include(PWM.asm)
 $include(LCD.asm)
 $include(math16.asm)
+$include(tempDisp.asm)
 
 DSEG at 30h
 	x:				ds	2
@@ -64,6 +79,9 @@ DSEG at 30h
 	;LCD Variables
 	timer1_count:	ds	1
 	digits:			ds	1
+	
+	;tempDisp Variables
+	
 
 BSEG
 	PWMdone:	dbit	1
@@ -91,8 +109,17 @@ myprogram:
 	mov HEX1, a
 	mov HEX0, a
 	
+	mov soakTemp, #150
+	mov soakTimeMin, #1
+	mov soakTimeSec, #30
+	
+	mov reflowTemp, #220
+	mov reflowTimeMin, #1
+	mov reflowTimeSec, #0
+	
 	lcall InitTimer0
 	lcall InitTimer1
+	lcall Init_Temp
 	
 	mov P0MOD, #00000011B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
 	setb EA  ; Enable all interrupts
@@ -100,6 +127,10 @@ myprogram:
 ;===============================================================
 ; THE STATE MACHINE, LADIES AND GENTLEMEN.
 ;===============================================================
+
+s6_SetVars: 			;moves back to s0_Idle after all varibles have been set/after buton pushed
+	jnb KEY.2, s6_SetVars
+	ljmp s0_idle
 	
 s0_Idle: 				;state we reset to when stop buton/switch pressed
 	SetTemp(#0)
@@ -160,13 +191,11 @@ Cooling_Buzzer:
 	djnz R0, Cooling_buzzer
 	pop AR0
 s5_loop:
-	jb emergency, s0_idle
+	jb emergency, jumpToIdle
 	lcall Display_LCD_L5
 	jnb Pwmdone, s5_loop
 	ljmp s0_idle
-
-s6_SetVars: 			;moves back to s0_Idle after all varibles have been set/after buton pushed
-	jnb KEY.2, s6_SetVars
+JumpToIdle:
 	ljmp s0_idle
 	
 ;=================================================================
