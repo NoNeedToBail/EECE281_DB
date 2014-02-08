@@ -15,6 +15,7 @@ $NOLIST
 
 SetTemp MAC
 	mov DesiredTemp, %0
+	mov DesiredTemp+1, %1
 	clr pwmdone
 	clr holding
 	ENDMAC
@@ -93,24 +94,26 @@ NotZero:
 	
 tempAdjust:
 	clr c
-	mov a, temperature
-	subb a, desiredtemp
-	mov difference, a
-	jb acc.7, twoscomp
-pos:
-	jnc toohot
+	mov x, temperature
+	mov y, desiredTemp
+	lcall sub16
+	mov a, x
+	jnb acc.7, toohot
 toocold:
+	add a, #RANGE
+	jnb acc.7, turnon
+	ret
+turnon:
 	setb PWR
 	ret
 toohot:
+	subb a, #RANGE
+	jb acc.7, turnoff
+	ret
+turnoff:
 	clr PWR
 	ret
-twoscomp:
-	cpl a
-	inc a
-	mov difference, a
-	sjmp pos
-	
+
 ;DecTskTime - decrements the time left for holding
 
 decTskTime:
@@ -159,7 +162,6 @@ InitTimer0:
 	mov tsksec, #0
 	clr pwmdone
 	clr holding
-	mov desiredTemp, #20
 	
 	mov a, TMOD
 	anl a, #0f0h

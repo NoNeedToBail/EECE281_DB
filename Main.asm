@@ -38,10 +38,10 @@ DSEG at 30h
 	x:				ds	2
 	y:				ds	2
 	bcd:			ds	3
-	temperature:	ds	1
+	temperature:	ds	2
 
 	;PWM Variables - don't touch!
-	desiredTemp:	ds	1
+	desiredTemp:	ds	2
 	timeToReach:	ds	1
 	UniMin:			ds	1
 	UniSec:			ds	1
@@ -51,11 +51,11 @@ DSEG at 30h
 	difference:		ds	1
 	
 	;Main Variables
-	soakTemp:		ds	1
+	soakTemp:		ds	2
 	soakTempBCD:	ds	2
 	soakTimeSec:	ds	1
 	soakTimeMin:	ds	1
-	reflowTemp:		ds	1
+	reflowTemp:		ds	2
 	reflowTempBCD:	ds	2
 	reflowTimeSec:	ds	1
 	reflowTimeMin:	ds	1
@@ -91,18 +91,34 @@ myprogram:
 	mov HEX1, a
 	mov HEX0, a
 	
+	mov soakTemp, #200
+	mov soakTemp+1, #0
+	mov soakTimeMin, #2
+	mov soakTimeSec, #0
+	
+	mov reflowTemp, #low(260)
+	mov reflowTemp+1, #high(260)
+	mov reflowTimeMin, #0
+	mov reflowTimeSec, #30
+	
 	lcall InitTimer0
 	lcall InitTimer1
 	
 	mov P0MOD, #00000011B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
 	setb EA  ; Enable all interrupts
+	sjmp s0_idle
 	
 ;===============================================================
 ; THE STATE MACHINE, LADIES AND GENTLEMEN.
 ;===============================================================
-	
-s0_Idle: 				;state we reset to when stop buton/switch pressed
-	SetTemp(#0)
+
+
+s6_SetVars: 			;moves back to s0_Idle after all varibles have been set/after buton pushed
+	jnb KEY.2, s6_SetVars
+	ljmp s0_idle
+		
+s0_Idle: 				;state we reset to when stop button/switch pressed
+	SetTemp(#20, #0)
 		 					
 	jnb KEY.3, s1_RampToSoak ; if Key 3 pressed, jumps to s1_RampToSoak
 	jnb KEY.2, s6_SetVars 		 ; if Key 2 pressed, jumps s6_SetVars
@@ -112,7 +128,7 @@ s0_Idle: 				;state we reset to when stop buton/switch pressed
 		 
 s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	jnb KEY.3, s1_RampToSoak
-	setTemp(soakTemp)
+	setTemp(soakTemp, soakTemp+1)
 	lcall Display_LCD_L1
 	lcall buzz1Sec
 s1_loop:
@@ -130,7 +146,7 @@ s2_loop:
 	jnb Pwmdone, s2_loop
 
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
-	SetTemp(ReflowTemp)
+	SetTemp(ReflowTemp, reflowTemp+1)
 	lcall Display_LCD_L3
 	lcall buzz1Sec
 s3_loop:
@@ -150,7 +166,7 @@ s4_loop:
 	jnb Pwmdone, s4_loop
 
 s5_Cooling: 			;moves to s6_SetVars when temp is less than 60 degrees
-	setTemp(#60)
+	setTemp(#60, #0)
 	lcall Display_LCD_DOOR
 	push AR0
 Cooling_Buzzer:
@@ -160,15 +176,14 @@ Cooling_Buzzer:
 	djnz R0, Cooling_buzzer
 	pop AR0
 s5_loop:
-	jb emergency, s0_idle
+	jb emergency, s5_jump_to_idle
 	lcall Display_LCD_L5
 	jnb Pwmdone, s5_loop
 	ljmp s0_idle
-
-s6_SetVars: 			;moves back to s0_Idle after all varibles have been set/after buton pushed
-	jnb KEY.2, s6_SetVars
+s5_jump_to_idle:
 	ljmp s0_idle
-	
+
+
 ;=================================================================
 ; THE END OF THE STATE MACHINE. THANK YOU. WE'LL BE HERE ALL WEEK.
 ;=================================================================
