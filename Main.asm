@@ -120,17 +120,13 @@ myprogram:
 	
 	lcall start_LCD
 	
-	setb LEDRA.0
 	lcall InitTimer0
-	setb LEDRA.1
 	lcall InitTimer1
-	setb LEDRA.2
-	
+
 	lcall Init_Temp
-	setb LEDRA.3
 	mov P0MOD, #00000011B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
 	clr EA
-	;setb EA  ; Enable all interrupts
+	setb EA  ; Enable all interrupts
 	ljmp s0_idle
 	
 ;==================================================
