@@ -253,7 +253,31 @@ start:
 	mov reflowTimeSec, #00000000b
 	mov reflowTimeMin, #00000001b
 
-selectSoakTemp:
+selectSoakTemp: 
+	lcall clear_screen
+	LCD_send_character('E',#80H)
+	LCD_send_character('n',#81H)
+	LCD_send_character('t',#82H)
+	LCD_send_character('e',#83H)
+	LCD_send_character('r',#84H)
+	LCD_send_character('t',#86H)
+	LCD_send_character('h',#87H)
+	LCD_send_character('e',#88H)
+	LCD_send_character('n',#8AH)
+	LCD_send_character('e',#8BH)
+	LCD_send_character('w',#8CH)
+	
+	LCD_send_character('s',#0C0H)
+	LCD_send_character('o',#0C1H)
+	LCD_send_character('a',#0C2H)
+	LCD_send_character('k',#0C3H)
+	LCD_send_character('t',#0C5H)
+	LCD_send_character('e',#0C6H)
+	LCD_send_character('m',#0C7H)
+	LCD_send_character('p',#0C8H)
+	LCD_send_character(':',#0C9H)
+	
+	LCD_send_number(soakTemp,#0CBH,#3,#1)
 	jb key.3, nodebounceToSoakTime
 	jnb key.3, $
 	ljmp selectSoakTime
@@ -268,6 +292,31 @@ noDebounceToSoakTime:
     ljmp selectSoakTemp
 
 selectSoakTime:
+	lcall clear_screen
+	LCD_send_character('E',#80H)
+	LCD_send_character('n',#81H)
+	LCD_send_character('t',#82H)
+	LCD_send_character('e',#83H)
+	LCD_send_character('r',#84H)
+	LCD_send_character('t',#86H)
+	LCD_send_character('h',#87H)
+	LCD_send_character('e',#88H)
+	LCD_send_character('n',#8AH)
+	LCD_send_character('e',#8BH)
+	LCD_send_character('w',#8CH)
+	
+	LCD_send_character('s',#0C0H)
+	LCD_send_character('o',#0C1H)
+	LCD_send_character('a',#0C2H)
+	LCD_send_character('k',#0C3H)
+	LCD_send_character('s',#0C5H)
+	LCD_send_character('e',#0C6H)
+	LCD_send_character('c',#0C7H)
+	LCD_send_character('s',#0C8H)
+	LCD_send_character(':',#0C9H)
+	
+	LCD_send_number(soakTimeMin,#0CBH,#2,#0)
+	LCD_send_number(soakTimeSec,#0CDH,#2,#0)
 	jb key.3, nodebounceToSoakTimeMin
 	jnb key.3, $
 	ljmp selectSoakTimeMin
@@ -281,6 +330,31 @@ noDebounceToSoakTimeMin:
 	ljmp selectSoakTime
 	
 selectSoakTimeMin:
+	lcall clear_screen
+	LCD_send_character('E',#80H)
+	LCD_send_character('n',#81H)
+	LCD_send_character('t',#82H)
+	LCD_send_character('e',#83H)
+	LCD_send_character('r',#84H)
+	LCD_send_character('t',#86H)
+	LCD_send_character('h',#87H)
+	LCD_send_character('e',#88H)
+	LCD_send_character('n',#8AH)
+	LCD_send_character('e',#8BH)
+	LCD_send_character('w',#8CH)
+	
+	LCD_send_character('s',#0C0H)
+	LCD_send_character('o',#0C1H)
+	LCD_send_character('a',#0C2H)
+	LCD_send_character('k',#0C3H)
+	LCD_send_character('m',#0C5H)
+	LCD_send_character('i',#0C6H)
+	LCD_send_character('n',#0C7H)
+	LCD_send_character('s',#0C8H)
+	LCD_send_character(':',#0C9H)
+	
+	LCD_send_number(soakTimeMin,#0CBH,#2,#0)
+	LCD_send_number(soakTimeSec,#0CDH,#2,#0)
 	jb key.3, nodebounceToReflowTemp
 	jnb key.3, $
 	ljmp selectReflowTemp
@@ -294,6 +368,30 @@ noDebounceToReflowTemp:
 	ljmp selectSoakTimeMin
 	
 selectReflowTemp:
+	lcall clear_screen
+	LCD_send_character('E',#80H)
+	LCD_send_character('n',#81H)
+	LCD_send_character('t',#82H)
+	LCD_send_character('e',#83H)
+	LCD_send_character('r',#84H)
+	LCD_send_character('t',#86H)
+	LCD_send_character('h',#87H)
+	LCD_send_character('e',#88H)
+	LCD_send_character('n',#8AH)
+	LCD_send_character('e',#8BH)
+	LCD_send_character('w',#8CH)
+	
+	LCD_send_character('r',#0C0H)
+	LCD_send_character('f',#0C1H)
+	LCD_send_character('l',#0C2H)
+	LCD_send_character('w',#0C3H)
+	LCD_send_character('t',#0C5H)
+	LCD_send_character('e',#0C6H)
+	LCD_send_character('m',#0C7H)
+	LCD_send_character('p',#0C8H)
+	LCD_send_character(':',#0C9H)
+	
+	LCD_send_number(reflowTemp,#0CBH,#3,#1)
 	jb key.3, nodebounceToReflowTime
 	jnb key.3, $
 	ljmp selectReflowTime
@@ -308,6 +406,31 @@ noDebounceToReflowTime:
     ljmp selectReflowTemp
 
 selectReflowTime:
+	lcall clear_screen
+	LCD_send_character('E',#80H)
+	LCD_send_character('n',#81H)
+	LCD_send_character('t',#82H)
+	LCD_send_character('e',#83H)
+	LCD_send_character('r',#84H)
+	LCD_send_character('t',#86H)
+	LCD_send_character('h',#87H)
+	LCD_send_character('e',#88H)
+	LCD_send_character('n',#8AH)
+	LCD_send_character('e',#8BH)
+	LCD_send_character('w',#8CH)
+	
+	LCD_send_character('r',#0C0H)
+	LCD_send_character('f',#0C1H)
+	LCD_send_character('l',#0C2H)
+	LCD_send_character('w',#0C3H)
+	LCD_send_character('s',#0C5H)
+	LCD_send_character('e',#0C6H)
+	LCD_send_character('c',#0C7H)
+	LCD_send_character('s',#0C8H)
+	LCD_send_character(':',#0C9H)
+	
+	LCD_send_number(reflowTimeMin,#0CBH,#2,#0)
+	LCD_send_number(reflowTimeSec,#0CDH,#2,#0)
 	jb key.3, nodebounceToReflowTimeMin
 	jnb key.3, $
 	ljmp selectReflowTimeMin
@@ -321,6 +444,31 @@ noDebounceToReflowTimeMin:
 	ljmp selectReflowTime
 	
 selectReflowTimeMin:
+	lcall clear_screen
+	LCD_send_character('E',#80H)
+	LCD_send_character('n',#81H)
+	LCD_send_character('t',#82H)
+	LCD_send_character('e',#83H)
+	LCD_send_character('r',#84H)
+	LCD_send_character('t',#86H)
+	LCD_send_character('h',#87H)
+	LCD_send_character('e',#88H)
+	LCD_send_character('n',#8AH)
+	LCD_send_character('e',#8BH)
+	LCD_send_character('w',#8CH)
+	
+	LCD_send_character('r',#0C0H)
+	LCD_send_character('f',#0C1H)
+	LCD_send_character('l',#0C2H)
+	LCD_send_character('w',#0C3H)
+	LCD_send_character('m',#0C5H)
+	LCD_send_character('i',#0C6H)
+	LCD_send_character('n',#0C7H)
+	LCD_send_character('s',#0C8H)
+	LCD_send_character(':',#0C9H)
+	
+	LCD_send_number(reflowTimeMin,#0CBH,#2,#0)
+	LCD_send_number(reflowTimeSec,#0CDH,#2,#0)
 	jb key.3, nodebounceToActual
 	jnb key.3, $
 	ljmp actual
