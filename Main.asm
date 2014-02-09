@@ -89,6 +89,7 @@ BSEG
 	buzzer:		dbit    1		;turn on to get buzzer
 	mf:			dbit	1
 	emergency:	dbit	1
+	spaces:		dbit	1		;for our leading 0's problem
 	
 CSEG
 

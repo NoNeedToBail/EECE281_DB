@@ -94,6 +94,7 @@ LCD_send_number MAC (%0,%1,%2,%3) ; %0 is num, %1 is position, %2 is # of digits
 	push psw
 	mov bcd+1, #0
 	mov a, %3
+	mov spaces, a
 	jz BCD%L
 	mov x, %0
 	lcall hex2bcd
@@ -121,6 +122,7 @@ LCD_send_num:
 	subb A, #2
 	jz LCD_send_number_L3 ; 2 digits
 	
+	jnb spaces, LCD_send_number_L2
 	mov A, bcd+1
 	anl A, #0FH
 	cjne A, #0, LCD_send_number_L2  ; jumps if BCD+1 is not zero
@@ -128,6 +130,7 @@ LCD_send_num:
 	lcall LCD_put
 	
 LCD_send_number_L3:
+	jnb spaces, LCD_send_number_L1
 	mov A, bcd+0
 	swap A
 	anl A, #0FH
