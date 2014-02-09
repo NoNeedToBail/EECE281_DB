@@ -35,8 +35,7 @@ org 0000H
 	ljmp myprogram
 	
 org 000BH
-	lcall PWMISR
-	reti
+	ljmp PWMISR
 	
 org 001BH
 	ljmp ISR_timer1

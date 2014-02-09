@@ -48,7 +48,7 @@ Hold:
 Done:
 	pop acc
 	pop psw
-	ret
+	reti
 
 falseStart:
 	pop acc
