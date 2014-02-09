@@ -109,13 +109,7 @@ myprogram:
 	mov HEX1, a
 	mov HEX0, a
 	
-	mov soakTemp, #150
-	mov soakTimeMin, #1
-	mov soakTimeSec, #30h
-	
-	mov reflowTemp, #220
-	mov reflowTimeMin, #1
-	mov reflowTimeSec, #0
+
 	
 	lcall start_LCD
 	
@@ -123,6 +117,13 @@ myprogram:
 	lcall InitTimer1
 
 	lcall Init_Temp
+	mov soakTemp, #55h
+	mov soakTimeMin, #1
+	mov soakTimeSec, #30h
+	
+	mov reflowTemp, #100h
+	mov reflowTimeMin, #1
+	mov reflowTimeSec, #0
 	mov P0MOD, #00000011B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
 	clr EA
 	setb EA  ; Enable all interrupts
@@ -311,6 +312,8 @@ ret
 
 ;the loop for soakTemp changing. Press key3 to go onto next loop
 VarSelect:
+clr ET0
+clr ET1
 selectSoakTemp: 
 	lcall clear_screen
 selectSoakTemp1:
@@ -347,6 +350,7 @@ noDebounceToSoakTime:
 ;the loop for soakTimeSec changing. Press key3 to go onto next loop
 selectSoakTime:
 	lcall clear_screen
+selectSoakTime1:
 	LCD_send_character('E',#80H)
 	LCD_send_character('n',#81H)
 	LCD_send_character('t',#82H)
@@ -378,11 +382,12 @@ noDebounceToSoakTimeMin:
 	mov r1, soakTimeSec
 	lcall changeTime
 	mov soakTimeSec, r1
-	ljmp selectSoakTime	
+	ljmp selectSoakTime1	
 	
 ;the loop for soakTimeMin changing. Press key3 to go onto next loop
 selectSoakTimeMin:
 	lcall clear_screen
+selectSoakTimeMin1:
 	LCD_send_character('E',#80H)
 	LCD_send_character('n',#81H)
 	LCD_send_character('t',#82H)
@@ -414,11 +419,12 @@ noDebounceToReflowTemp:
 	mov r1, soakTimeMin
 	lcall changeTime
 	mov soakTimeMin, r1
-	ljmp selectSoakTimeMin
+	ljmp selectSoakTimeMin1
 	
 ;The loop for selecting reflow temp
 selectReflowTemp:
 	lcall clear_screen
+selectReflowTemp1:
 	LCD_send_character('E',#80H)
 	LCD_send_character('n',#81H)
 	LCD_send_character('t',#82H)
@@ -447,11 +453,12 @@ selectReflowTemp:
 	ljmp selectReflowTime
 noDebounceToReflowTime:
     tempSelect(reflowTemp)
-    ljmp selectReflowTemp
+    ljmp selectReflowTemp1
 
 ;the loop for reflowTimeSec changing. Press key3 to go onto next loop
 selectReflowTime:
 	lcall clear_screen
+selectReflowTime1:
 	LCD_send_character('E',#80H)
 	LCD_send_character('n',#81H)
 	LCD_send_character('t',#82H)
@@ -483,11 +490,12 @@ noDebounceToReflowTimeMin:
 	mov r1, reflowTimeSec
 	lcall changeTime
 	mov reflowTimeSec, r1
-	ljmp selectReflowTime
+	ljmp selectReflowTime1
 	
 ;the loop for reflowTimeMin changing. Press key3 to go onto next loop
 selectReflowTimeMin:
 	lcall clear_screen
+selectReflowTimeMin1:
 	LCD_send_character('E',#80H)
 	LCD_send_character('n',#81H)
 	LCD_send_character('t',#82H)
@@ -514,12 +522,14 @@ selectReflowTimeMin:
 	LCD_send_number(reflowTimeSec,#0CDH,#2,#0)
 	jb key.3, nodebounceToReturn
 	jnb key.3, $
+	setb ET0
+	setb ET1
 	ret
 noDebounceToReturn:
 	mov r1, reflowTimeMin
 	lcall changeTime
 	mov reflowTimeMin, r1
-	ljmp selectReflowTimeMin
+	ljmp selectReflowTimeMin1
 ;====================================================
 ;End of variable selection
 ;=====================================================
