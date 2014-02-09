@@ -222,13 +222,9 @@ nobuzzer:
 	reti
 	
 Wait1Sec:
-	push acc
-	mov a, R0
-	push acc
-	mov a, R1
-	push acc
-	mov a, R2
-	push acc
+	push AR0
+	push AR1
+	push AR2
 	mov R0, #180
 WaitL0:
 	mov R1, #250
@@ -238,13 +234,9 @@ WaitL2:
 	djnz R2, WaitL2
 	djnz R1, WaitL1
 	djnz R0, WaitL0
-	pop acc
-	mov R2, a
-	pop acc
-	mov R1, a
-	pop acc
-	mov R0, a
-	pop acc
+	pop AR2
+	pop AR1
+	pop AR0
 	ret
 	
 Buzz1Sec:
