@@ -94,8 +94,11 @@ LCD_send_number MAC (%0,%1,%2,%3) ; %0 is num, %1 is position, %2 is # of digits
 	push psw
 	mov bcd+1, #0
 	mov a, %3
-	mov spaces, a
+	cjne A, #0, space_%L
+	clr spaces
 	jz BCD%L
+space_%L:
+	setb spaces
 	mov x, %0
 	mov x+1, #0
 	lcall hex2bcd
