@@ -94,7 +94,7 @@ LCD_send_number MAC (%0,%1,%2,%3) ; %0 is num, %1 is position, %2 is # of digits
 	push psw
 	mov bcd+1, #0
 	mov a, %3
-	jnz BCD%L
+	jz BCD%L
 	mov x, %0
 	lcall hex2bcd
 	sjmp LCD_Done%L
