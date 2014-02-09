@@ -63,6 +63,8 @@ start_LCD:
 	mov a, #38H ; 8-bits interface, 2 lines, 5x7 characters
 	lcall LCD_command
 clear_screen:
+	push acc
+	push AR1
 	mov a, #01H ; Clear screen (Warning, very slow command!)
 	lcall LCD_command
     
@@ -71,6 +73,8 @@ clear_screen:
 Clr_loop:
 	lcall Wait40us
 	djnz R1, Clr_loop
+	pop AR1
+	pop acc
 	ret
 ; --------------------------
 ;| END CODE FOR LCD DISPLAY |
