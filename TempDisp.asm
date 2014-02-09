@@ -27,7 +27,20 @@ ISR_timer2:
 	push psw
 	push acc
 	push x
+	push x+1
 	push y
+	push bcd
+	push bcd+1
+	push bcd+2
+	push AR0
+	push AR1
+	push AR2
+	push AR3
+	push AR4
+	push AR5
+	push AR6
+	push AR7
+	
 	mov b, #0  ; Read channel 0
 	lcall Read_ADC_Channel
 	
@@ -67,7 +80,19 @@ ISR_timer2:
 	lcall hex2bcd
 	lcall send_number
 	
+	pop AR7
+	pop AR6
+	pop AR5
+	pop AR4
+	pop AR3
+	pop AR2
+	pop AR1
+	pop AR0
+	pop bcd+2
+	pop bcd+1
+	pop bcd
 	pop y
+	pop x+1
 	pop x
 	pop acc
 	pop psw
