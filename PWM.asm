@@ -53,7 +53,7 @@ Done:
 falseStart:
 	pop acc
 	pop psw
-	ret
+	reti
 	
 ;rampf - ISR function for when in ramping mode
 
