@@ -124,7 +124,7 @@ myprogram:
 	mov reflowTimeMin, #0
 	mov reflowTimeSec, #10h
 	
-	mov P0MOD, #00000011B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
+	mov P0MOD, #00001101B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
 	setb EA  ; Enable all interrupts
 	;clr ET1
 	;clr ET2

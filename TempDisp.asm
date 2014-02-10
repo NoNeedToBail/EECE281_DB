@@ -77,6 +77,7 @@ ISR_timer2:
 	
 	lcall add16
 	mov temperature, x
+	setb LEDRA.0
 	lcall hex2bcd
 	lcall send_number
 	
@@ -180,6 +181,7 @@ InitSerialPort:
 	mov RCAP2L, #low(T2LOAD)
 	setb TR2 ; Enable timer 2
 	mov SCON, #52H
+	setb ET2
 	ret
 	
 END
