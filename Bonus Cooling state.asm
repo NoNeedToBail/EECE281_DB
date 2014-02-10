@@ -47,4 +47,20 @@ s5_loop:
 JumpToIdle:
 	ljmp s0_idle
 	
-	
+Wait1Sec:
+	push AR0
+	push AR1
+	push AR2
+	mov R0, #140
+WaitL0:
+	mov R1, #200
+WaitL1:
+	mov R2, #200
+WaitL2:
+	djnz R2, WaitL2
+	djnz R1, WaitL1
+	djnz R0, WaitL0
+	pop AR2
+	pop AR1
+	pop AR0
+	ret
