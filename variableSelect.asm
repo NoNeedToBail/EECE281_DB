@@ -182,7 +182,7 @@ ret
 
 ;the loop for soakTemp changing. Press key3 to go onto next loop
 VarSelect:
-clr ET1
+	clr ET1
 selectSoakTemp: 
 	lcall clear_screen
 selectSoakTemp1:
@@ -207,8 +207,8 @@ selectSoakTemp1:
 	LCD_send_character('m',#0C7H)
 	LCD_send_character('p',#0C8H)
 	LCD_send_character(':',#0C9H)
-	
 	LCD_send_number(soakTemp,#0CBH,#3,#1)
+	
 	jb key.3, nodebounceToSoakTime
 	jnb key.3, $
 	ljmp selectSoakTime
@@ -241,9 +241,9 @@ selectSoakTime1:
 	LCD_send_character('c',#0C7H)
 	LCD_send_character('s',#0C8H)
 	LCD_send_character(':',#0C9H)
-	
 	LCD_send_number(soakTimeMin,#0CBH,#2,#0)
 	LCD_send_number(soakTimeSec,#0CDH,#2,#0)
+	
 	jb key.3, nodebounceToSoakTimeMin
 	jnb key.3, $
 	ljmp selectSoakTimeMin

@@ -13,17 +13,17 @@ CLK EQU 33333333
 ;Main
 BUZZERPIN EQU P0.1
 FREQ_1 EQU 2000
-TIMER1_RELOAD EQU 65536-(CLK/(12*2*FREQ_1))
+TIMER1_RELOAD EQU 65536-(CLK/(12*FREQ_1))
 
 ;PWM
 PWR EQU P0.0
-T0_Freq EQU 50
+T0_Freq EQU 200
 T0_RELOAD EQU 65536-(CLK/(12*T0_Freq))
 RANGE EQU 5
 
 ;TempDisp
 BAUD   EQU 115200
-T2LOAD EQU 65536-(CLK/(32*BAUD))
+T2LOAD EQU 65536-(CLK/(12*BAUD))
 MISO   EQU  P0.0 
 MOSI   EQU  P0.1 
 SCLK   EQU  P0.2
@@ -110,24 +110,24 @@ myprogram:
 	mov HEX1, a
 	mov HEX0, a
 	
-
-	
 	lcall start_LCD
-	
 	lcall InitTimer0
 	lcall InitTimer1
-
 	lcall Init_Temp
+	mov TMOD, #00010001b
+	
 	mov soakTemp, #150
-	mov soakTimeMin, #1
-	mov soakTimeSec, #30h
+	mov soakTimeMin, #0
+	mov soakTimeSec, #20h
 	
 	mov reflowTemp, #220
-	mov reflowTimeMin, #1
-	mov reflowTimeSec, #0
+	mov reflowTimeMin, #0
+	mov reflowTimeSec, #10h
+	
 	mov P0MOD, #00000011B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
-	clr EA
 	setb EA  ; Enable all interrupts
+	;clr ET1
+	;clr ET2
 	ljmp s0_idle
 
 ;===============================================================
@@ -135,24 +135,25 @@ myprogram:
 ;===============================================================
 
 s6_SetVars: 			;moves back to s0_Idle after all varibles have been set/after buton pushed
-
 	jnb KEY.2, s6_SetVars
 	lcall varSelect
 	ljmp s0_idle
 	
 s0_Idle: 				;state we reset to when stop buton/switch pressed
 	SetTemp(#0)
-	setb LEDRA.4	 					
+	mov uniSec, #0
+	mov uniMin, #0
+	clr emergency	 					
 	jnb KEY.3, s1_RampToSoak ; if Key 3 pressed, jumps to s1_RampToSoak
 	jnb KEY.2, s6_SetVars 		 ; if Key 2 pressed, jumps s6_SetVars
-	setb LEDRA.5
 	lcall Display_LCD_L0
-	setb LEDRA.6
-	sjmp s0_Idle 
-		 
+	sjmp s0_Idle
+
 s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	jnb KEY.3, s1_RampToSoak
-	setTemp(soakTemp)
+	lcall clear_screen
+	;setTemp(soakTemp)
+	HoldTemp(#0, #10h)
 	lcall Display_LCD_L1
 	lcall buzz1Sec
 s1_loop:
@@ -161,6 +162,7 @@ s1_loop:
 	jnb Pwmdone, s1_loop	
 	
 s2_Soak:
+	lcall clear_screen
 	HoldTemp(soakTimeMin, soakTimeSec)
 	lcall Display_LCD_L2
 	lcall buzz1Sec
@@ -170,7 +172,9 @@ s2_loop:
 	jnb Pwmdone, s2_loop
 
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
-	SetTemp(ReflowTemp)
+	lcall clear_screen
+	;SetTemp(ReflowTemp)
+	holdTemp(#0, #20h)
 	lcall Display_LCD_L3
 	lcall buzz1Sec
 s3_loop:
@@ -179,26 +183,31 @@ s3_loop:
 	jnb Pwmdone, s3_loop
 
 s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
+	lcall clear_screen
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
 	lcall Display_LCD_L4
 	lcall buzz1Sec
+	lcall Display_LCD_L4
 	lcall buzz1Sec
+	lcall Display_LCD_L4
 	lcall buzz1Sec
 s4_loop:
-	jb emergency, s0_idle
+	jb emergency, jumpToIdle
 	lcall Display_LCD_L4
 	jnb Pwmdone, s4_loop
 
 s5_Cooling: 			;moves to s6_SetVars when temp is less than 60 degrees
+	lcall clear_screen
 	setTemp(#60)
 	lcall Display_LCD_DOOR
 	push AR0
+	mov R0, #3
 Cooling_Buzzer:
-	mov R0, #6
 	lcall buzz1sec
 	lcall wait1sec
 	djnz R0, Cooling_buzzer
 	pop AR0
+	lcall clear_screen
 s5_loop:
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L5
@@ -215,14 +224,8 @@ ISR_timer1:			;needs more work
 	push acc
 	mov TH1, #high(TIMER1_RELOAD)
     mov TL1, #low(TIMER1_RELOAD)
-    
-    djnz timer1_count, noclear
-    lcall clear_screen
-    mov timer1_count, #200
-NoClear:
     jb KEY.1, BuzzerCheck
-    setb Emergency
-    
+    setb Emergency		;set emergency if KEY1 is pressed
 BuzzerCheck:
     jnb buzzer, nobuzzer
     cpl BUZZERPIN
@@ -234,11 +237,11 @@ Wait1Sec:
 	push AR0
 	push AR1
 	push AR2
-	mov R0, #180
+	mov R0, #140
 WaitL0:
-	mov R1, #250
+	mov R1, #200
 WaitL1:
-	mov R2, #250
+	mov R2, #200
 WaitL2:
 	djnz R2, WaitL2
 	djnz R1, WaitL1
@@ -256,10 +259,6 @@ Buzz1Sec:
 	
 InitTimer1:
 	mov timer1_count, #200
-	mov a, TMOD
-	anl a, #0Fh
-	orl a, #00010000b
-	mov TMOD, a
 	clr TR1 ; Disable timer 1
 	clr TF1
     mov TH1, #high(TIMER1_RELOAD)

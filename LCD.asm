@@ -201,6 +201,8 @@ Display_LCD: ;Display the common values among all the states
 	LCD_send_number(temperature,#83H,#3, #1)
 	LCD_send_character('C',#86H)
 	
+	lcall Display_LCD_Time
+	
 	mov a, tskSec
 	jnz display_job_time
 	mov a, tskMin
@@ -217,6 +219,12 @@ Display_job_time:
 	LCD_send_number(tskMin, #89H, #1, #0)
 	LCD_send_character(':',#8AH)
 	LCD_send_number(tskSec, #8BH, #2, #0)
+	ret
+	
+Display_LCD_time: ; display the time, which is common among the "working" states
+	LCD_send_number(uniMin, #0C0h, #1, #0)
+	LCD_send_character(':',#0C1H)
+	LCD_send_number(uniSec,#0C2H,#2, #0)
 	ret
 	
 Display_LCD_L0: ;idle state
@@ -236,6 +244,8 @@ Display_LCD_L0: ;idle state
 	LCD_send_character('l',#0C2H)
 	LCD_send_character('w',#0C3H)
 	LCD_send_character(':',#0C4H)
+	
+	
 	LCD_send_number(reflowTemp,#0C6H,#3, #1)
 	LCD_send_character('C',#0C9H)
 	LCD_send_number(reflowTimeMin, #0CBh, #1, #0)
@@ -258,12 +268,8 @@ Display_LCD_DOOR: ;OPEN OVEN DOOR
 	LCD_send_character('r',#0CEH)
 	ret
 	
-Display_LCD_time: ; display the time, which is common among the next 5 states
-	LCD_send_number(uniMin, #0C0h, #1, #0)
-	LCD_send_character(':',#0C1H)
-	LCD_send_number(uniSec,#0C2H,#3, #0)
-	
 Display_LCD_L1: ; ramp to soak
+	lcall Display_LCD
 	LCD_send_character('S',#0C6H)
 	LCD_send_character('o',#0C7H)
 	LCD_send_character('a',#0C8H)
@@ -275,6 +281,7 @@ Display_LCD_L1: ; ramp to soak
 	ret
 	
 Display_LCD_L2: ; preheat/soak
+	lcall Display_LCD
 	LCD_send_character('S',#0C6H)
 	LCD_send_character('o',#0C7H)
 	LCD_send_character('a',#0C8H)
@@ -286,6 +293,7 @@ Display_LCD_L2: ; preheat/soak
 	ret
 	
 Display_LCD_L3: ; ramp to peak
+	lcall Display_LCD
 	LCD_send_character('R',#0C5H)
 	LCD_send_character('e',#0C6H)
 	LCD_send_character('f',#0C7H)
@@ -299,6 +307,7 @@ Display_LCD_L3: ; ramp to peak
 	ret
 	
 Display_LCD_L4: ; reflow
+	lcall Display_LCD
 	LCD_send_character('R',#0C5H)
 	LCD_send_character('e',#0C6H)
 	LCD_send_character('f',#0C7H)
@@ -312,6 +321,7 @@ Display_LCD_L4: ; reflow
 	ret
 	
 Display_LCD_L5: ; cooling
+	lcall Display_LCD
 	LCD_send_character('C',#0C6H)
 	LCD_send_character('o',#0C7H)
 	LCD_send_character('o',#0C8H)

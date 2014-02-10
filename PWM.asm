@@ -36,13 +36,13 @@ PWMISR:
 	mov TH0, #high(T0_RELOAD)
 	mov TL0, #low(T0_RELOAD)
 	
-	mov a, count
-	cjne a, #50, falseStart
-	mov count, #0
+	djnz count, falseStart
+	mov count, #200
 	lcall incUniTime
 	jb holding, hold
 Ramp:
 	lcall rampf
+	sjmp done
 Hold:
 	lcall holdf
 Done:
@@ -160,15 +160,13 @@ InitTimer0:
 	clr pwmdone
 	clr holding
 	mov desiredTemp, #20
-	
-	mov a, TMOD
-	anl a, #0f0h
-	orl a, #1	;putting timer0 in 16 bit timer mode
-	clr TR0
-	clr TF0
-	;has a 20 ms delay so need 50 to make second (can only go to like 23 ms)
 	mov TH0, #high(T0_RELOAD)
 	mov TL0, #low(T0_RELOAD)	;initial frequency of genereated function
+	
+	;clr TR0
+	;clr TF0
+	;has a 20 ms delay so need 50 to make second (can only go to like 23 ms)
+
 	setb TR0	;start timer 1
 	setb ET0
 	ret
