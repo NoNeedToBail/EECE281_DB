@@ -11,12 +11,12 @@ $modde2
 CLK EQU 33333333
 
 ;Main
-BUZZERPIN EQU P0.1
+BUZZERPIN EQU P0.6
 FREQ_1 EQU 2000
 TIMER1_RELOAD EQU 65536-(CLK/(12*FREQ_1))
 
 ;PWM
-PWR EQU P0.0
+PWR EQU P0.7
 T0_Freq EQU 200
 T0_RELOAD EQU 65536-(CLK/(12*T0_Freq))
 RANGE EQU 5
@@ -39,9 +39,6 @@ org 000BH
 	
 org 001BH
 	ljmp ISR_timer1
-	
-org 002Bh
-	ljmp ISR_timer2
 
 $include(PWM.asm)
 $include(LCD.asm)
@@ -116,18 +113,21 @@ myprogram:
 	lcall Init_Temp
 	mov TMOD, #00010001b
 	
-	mov soakTemp, #150
+	mov soakTemp, #40
 	mov soakTimeMin, #0
 	mov soakTimeSec, #20h
 	
-	mov reflowTemp, #220
+	mov reflowTemp, #80
 	mov reflowTimeMin, #0
 	mov reflowTimeSec, #10h
 	
-	mov P0MOD, #00001101B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
+	mov P0MOD, #00111110B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
+	setb ET2
+	setb TR2
 	setb EA  ; Enable all interrupts
+	clr TF2
 	;clr ET1
-	;clr ET2
+	;clr ET0
 	ljmp s0_idle
 
 ;===============================================================
@@ -140,20 +140,21 @@ s6_SetVars: 			;moves back to s0_Idle after all varibles have been set/after but
 	ljmp s0_idle
 	
 s0_Idle: 				;state we reset to when stop buton/switch pressed
+	lcall clear_screen
 	SetTemp(#0)
+	clr emergency
+s0_loop:
 	mov uniSec, #0
 	mov uniMin, #0
-	clr emergency	 					
 	jnb KEY.3, s1_RampToSoak ; if Key 3 pressed, jumps to s1_RampToSoak
 	jnb KEY.2, s6_SetVars 		 ; if Key 2 pressed, jumps s6_SetVars
 	lcall Display_LCD_L0
-	sjmp s0_Idle
+	sjmp s0_loop
 
 s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	jnb KEY.3, s1_RampToSoak
 	lcall clear_screen
-	;setTemp(soakTemp)
-	HoldTemp(#0, #10h)
+	setTemp(soakTemp)
 	lcall Display_LCD_L1
 	lcall buzz1Sec
 s1_loop:
@@ -173,8 +174,7 @@ s2_loop:
 
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
 	lcall clear_screen
-	;SetTemp(ReflowTemp)
-	holdTemp(#0, #20h)
+	SetTemp(ReflowTemp)
 	lcall Display_LCD_L3
 	lcall buzz1Sec
 s3_loop:
@@ -221,6 +221,7 @@ JumpToIdle:
 ;=================================================================
 	
 ISR_timer1:			;needs more work
+	setb LEDRA.2
 	push acc
 	mov TH1, #high(TIMER1_RELOAD)
     mov TL1, #low(TIMER1_RELOAD)
@@ -231,6 +232,7 @@ BuzzerCheck:
     cpl BUZZERPIN
 nobuzzer:
 	pop acc
+	clr LEDRA.2
 	reti
 	
 Wait1Sec:

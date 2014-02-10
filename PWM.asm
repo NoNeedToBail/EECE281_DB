@@ -31,10 +31,12 @@ HoldTemp MAC
 ;PWMISR - ISR to deal with timing and temperature adjustments
 	
 PWMISR:
+	setb LEDRA.3
 	push psw
 	push acc
 	mov TH0, #high(T0_RELOAD)
 	mov TL0, #low(T0_RELOAD)
+	lcall get_temp
 	
 	djnz count, falseStart
 	mov count, #200
@@ -48,11 +50,13 @@ Hold:
 Done:
 	pop acc
 	pop psw
+	clr LEDRA.3
 	reti
 
 falseStart:
 	pop acc
 	pop psw
+	clr LEDRA.3
 	reti
 	
 ;rampf - ISR function for when in ramping mode

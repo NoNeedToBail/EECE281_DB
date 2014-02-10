@@ -23,7 +23,8 @@ Init_Temp:; the function above is the function u guys should call in the beginni
 	lcall InitSerialPort
 	ret
 
-ISR_timer2:
+Get_temp:
+	setb LEDRA.4
 	push psw
 	push acc
 	push x
@@ -41,6 +42,8 @@ ISR_timer2:
 	push AR6
 	push AR7
 	
+	clr TF2
+	setb LEDRA.5
 	mov b, #0  ; Read channel 0
 	lcall Read_ADC_Channel
 	
@@ -181,7 +184,9 @@ InitSerialPort:
 	mov RCAP2L, #low(T2LOAD)
 	setb TR2 ; Enable timer 2
 	mov SCON, #52H
+	setb LEDRA.7
 	setb ET2
+	clr TF2
 	ret
 	
 END
