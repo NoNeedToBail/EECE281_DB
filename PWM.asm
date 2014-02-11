@@ -36,7 +36,9 @@ PWMISR:
 	mov TH0, #high(T0_RELOAD)
 	mov TL0, #low(T0_RELOAD)
 	lcall get_temp
-	
+	jb KEY.1, checkFalse
+	setb emergency
+CheckFalse:
 	djnz count, falseStart
 	mov count, #200
 	lcall sendTemp
@@ -49,8 +51,6 @@ Ramp:
 Hold:
 	lcall holdf
 Done:
-	;setb PWR
-
 	pop acc
 	pop psw
 	reti
