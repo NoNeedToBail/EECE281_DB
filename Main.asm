@@ -16,14 +16,14 @@ FREQ_1 EQU 2000
 TIMER1_RELOAD EQU 65536-(CLK/(12*FREQ_1))
 
 ;PWM
-PWR EQU P0.7
+PWR EQU P1.7
 T0_Freq EQU 200
 T0_RELOAD EQU 65536-(CLK/(12*T0_Freq))
 RANGE EQU 5
 
 ;TempDisp
 BAUD   EQU 115200
-T2LOAD EQU 65536-(CLK/(12*BAUD))
+T2LOAD EQU 65536-(CLK/(32*BAUD))
 MISO   EQU  P0.0 
 MOSI   EQU  P0.1 
 SCLK   EQU  P0.2
@@ -59,7 +59,7 @@ DSEG at 30h
 	UniSec:			ds	1
 	TskMin:			ds	1
 	TskSec:			ds	1
-	count:			ds	1
+	count:			ds	3
 	difference:		ds	1
 	
 	;Main Variables
@@ -121,14 +121,17 @@ myprogram:
 	mov reflowTimeMin, #0
 	mov reflowTimeSec, #10h
 	
-	mov P0MOD, #00111110B ;NEEDS TO BE REFORMULATED AFTER EVERYTHING IS ADDED
-	setb ET2
-	setb TR2
+	mov P0MOD, #00111110B
 	setb EA  ; Enable all interrupts
-	clr TF2
-	;clr ET1
-	;clr ET0
+	
 	ljmp s0_idle
+	
+SendTemp:
+	mov x+0, temperature
+	mov x+1, #0
+	lcall hex2bcd
+	lcall send_Number
+	ret
 
 ;===============================================================
 ; THE STATE MACHINE, LADIES AND GENTLEMEN.
@@ -220,8 +223,7 @@ JumpToIdle:
 ; THE END OF THE STATE MACHINE. THANK YOU. WE'LL BE HERE ALL WEEK.
 ;=================================================================
 	
-ISR_timer1:			;needs more work
-	setb LEDRA.2
+ISR_timer1:
 	push acc
 	mov TH1, #high(TIMER1_RELOAD)
     mov TL1, #low(TIMER1_RELOAD)
@@ -232,25 +234,17 @@ BuzzerCheck:
     cpl BUZZERPIN
 nobuzzer:
 	pop acc
-	clr LEDRA.2
 	reti
 	
 Wait1Sec:
-	push AR0
-	push AR1
-	push AR2
-	mov R0, #140
-WaitL0:
-	mov R1, #200
-WaitL1:
-	mov R2, #200
-WaitL2:
-	djnz R2, WaitL2
-	djnz R1, WaitL1
-	djnz R0, WaitL0
-	pop AR2
-	pop AR1
-	pop AR0
+	push acc
+	mov a, uniSec
+checkLoop:
+	;lcall sendTemp
+	cjne a, uniSec, doneWait
+	sjmp checkLoop
+DoneWait:
+	pop acc
 	ret
 	
 Buzz1Sec:

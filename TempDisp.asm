@@ -24,7 +24,6 @@ Init_Temp:; the function above is the function u guys should call in the beginni
 	ret
 
 Get_temp:
-	setb LEDRA.4
 	push psw
 	push acc
 	push x
@@ -43,7 +42,6 @@ Get_temp:
 	push AR7
 	
 	clr TF2
-	setb LEDRA.5
 	mov b, #0  ; Read channel 0
 	lcall Read_ADC_Channel
 	
@@ -80,9 +78,7 @@ Get_temp:
 	
 	lcall add16
 	mov temperature, x
-	setb LEDRA.0
 	lcall hex2bcd
-	lcall send_number
 	
 	pop AR7
 	pop AR6
@@ -151,7 +147,7 @@ putchar:
     RET
     
 Delay:
-	mov R3, #20
+	mov R3, #255
 Delay_loop:
 	djnz R3, Delay_loop
 	ret
@@ -174,6 +170,16 @@ send_number:
 	lcall putchar
 	mov a, #'\r'
 	lcall putchar
+	lcall delay
+	ret
+	
+WaitHalfSec:
+	mov R2, #90
+L3: mov R1, #250
+L2: mov R0, #250
+L1: djnz R0, L1
+	djnz R1, L2
+	djnz R2, L3
 	ret
 	
 InitSerialPort:
@@ -184,9 +190,5 @@ InitSerialPort:
 	mov RCAP2L, #low(T2LOAD)
 	setb TR2 ; Enable timer 2
 	mov SCON, #52H
-	setb LEDRA.7
-	setb ET2
-	clr TF2
-	ret
-	
+	ret	
 END
