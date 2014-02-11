@@ -47,12 +47,13 @@ $include(tempDisp.asm)
 $include(variableSelect.asm)
 
 DSEG at 30h
+	;math16 Variables
 	x:				ds	2
 	y:				ds	2
 	bcd:			ds	3
 	temperature:	ds	1
 
-	;PWM Variables - don't touch!
+	;PWM Variables
 	desiredTemp:	ds	1
 	timeToReach:	ds	1
 	UniMin:			ds	1
@@ -76,16 +77,13 @@ DSEG at 30h
 	;LCD Variables
 	timer1_count:	ds	1
 	digits:			ds	1
-	
-	;tempDisp Variables
-	
 
 BSEG
 	PWMdone:	dbit	1
 	holding:	dbit	1
 	mf:			dbit	1
 	emergency:	dbit	1
-	spaces:		dbit	1		;for our leading 0's problem
+	spaces:		dbit	1		;for leading 0's
 	
 CSEG
 
@@ -110,7 +108,7 @@ myprogram:
 	lcall InitTimer0
 	lcall InitTimer1
 	lcall Init_Temp
-	mov TMOD, #00010001b
+	mov TMOD, #00010001b ; Timers 1 and 0 in 16-bit mode
 	
 	mov soakTemp, #40
 	mov soakTimeMin, #2
@@ -200,7 +198,7 @@ s4_loop:
 	lcall Display_LCD_L4
 	jnb Pwmdone, s4_loop
 
-s5_Cooling: 			;moves to s6_SetVars when temp is less than 60 degrees
+s5_Cooling: 			;moves to s0_idle when temp is less than 60 degrees
 	lcall clear_screen
 	setTemp(#60)
 	lcall Display_LCD_DOOR
@@ -248,17 +246,6 @@ WaitL2:
 	pop AR1
 	pop AR0
 	ret
-
-;Wait1Sec:
-;	push acc
-;	mov a, uniSec
-;	inc a
-;checkLoop:
-;	cjne a, uniSec, doneWait
-;	sjmp checkLoop
-;;DoneWait:
-;	pop acc
-;	ret
 	
 Buzz1Sec:
 	setb ET1
