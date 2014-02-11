@@ -5,10 +5,10 @@ $NOLIST
 ; Variables required:
 ; Unimin, Unisec
 ; Tskmin, Tsksec
-; DesiredTemp
-; Temperature
-; DonePWM
-; Holding
+; DesiredTemp, Temperature
+; PWMdone, Holding
+; Difference
+; Emergency
 ;==============================================================
 
 ;SetTemp - Ramps to desired temp then sets PWMDone
