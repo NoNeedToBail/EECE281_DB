@@ -12,7 +12,7 @@ CLK EQU 33333333
 
 ;Main
 BUZZERPIN EQU P3.1
-FREQ_1 EQU 2000
+FREQ_1 EQU 1000
 TIMER1_RELOAD EQU 65536-(CLK/(12*FREQ_1))
 
 ;PWM
@@ -83,7 +83,6 @@ DSEG at 30h
 BSEG
 	PWMdone:	dbit	1
 	holding:	dbit	1
-	buzzer:		dbit    1		;turn on to get buzzer
 	mf:			dbit	1
 	emergency:	dbit	1
 	spaces:		dbit	1		;for our leading 0's problem
@@ -114,14 +113,16 @@ myprogram:
 	mov TMOD, #00010001b
 	
 	mov soakTemp, #40
-	mov soakTimeMin, #0
-	mov soakTimeSec, #20h
+	mov soakTimeMin, #2
+	mov soakTimeSec, #0
 	
 	mov reflowTemp, #80
 	mov reflowTimeMin, #0
 	mov reflowTimeSec, #10h
 	
 	mov P0MOD, #00111110B
+	mov P1MOD, #10000000B
+	mov P3MOD, #00000010B
 	setb EA  ; Enable all interrupts
 	
 	ljmp s0_idle
@@ -224,33 +225,45 @@ JumpToIdle:
 ;=================================================================
 	
 ISR_timer1:
-	push acc
+	
 	mov TH1, #high(TIMER1_RELOAD)
     mov TL1, #low(TIMER1_RELOAD)
-    jb KEY.1, BuzzerCheck
-    setb Emergency		;set emergency if KEY1 is pressed
-BuzzerCheck:
-    jnb buzzer, nobuzzer
     cpl BUZZERPIN
-nobuzzer:
-	pop acc
 	reti
 	
 Wait1Sec:
-	push acc
-	mov a, uniSec
-checkLoop:
-	;lcall sendTemp
-	cjne a, uniSec, doneWait
-	sjmp checkLoop
-DoneWait:
-	pop acc
+	push AR0
+	push AR1
+	push AR2
+	mov R0, #180
+WaitL0:
+	mov R1, #200
+WaitL1:
+	mov R2, #200
+WaitL2:
+	djnz R2, WaitL2
+	djnz R1, WaitL1
+	djnz R0, WaitL0
+	pop AR2
+	pop AR1
+	pop AR0
 	ret
+
+;Wait1Sec:
+;	push acc
+;	mov a, uniSec
+;	inc a
+;checkLoop:
+;	cjne a, uniSec, doneWait
+;	sjmp checkLoop
+;;DoneWait:
+;	pop acc
+;	ret
 	
 Buzz1Sec:
-	setb buzzer
+	setb ET1
 	lcall Wait1Sec
-	clr buzzer
+	clr ET1
 	ret
 	
 InitTimer1:
@@ -260,7 +273,6 @@ InitTimer1:
     mov TH1, #high(TIMER1_RELOAD)
     mov TL1, #low(TIMER1_RELOAD)
     setb TR1 ; Enable timer 1
-    setb ET1 ; Enable timer 1 interrupt
     ret
 	
 END

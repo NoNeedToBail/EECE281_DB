@@ -49,6 +49,8 @@ Ramp:
 Hold:
 	lcall holdf
 Done:
+	;setb PWR
+
 	pop acc
 	pop psw
 	reti
