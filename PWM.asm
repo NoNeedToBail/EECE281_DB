@@ -63,14 +63,8 @@ falseStart:
 ;rampf - ISR function for when in ramping mode
 
 rampf:
-;my thoughts: call temp adjust
-;then check to see if temp is within acceptable range to switch to plateauing
-;do we care about the rate or are we assuming we're just hitting it? wait and see?
-;also need to turn off bit for PWMdone, should this be done @the start of hitting a plateau?
-;aka here in this function?
 	lcall tempadjust
 	clr c
-;maybe change this to be more efficient later?
 	mov a, #Range
 	subb a, difference
 	jnc doneRamp
@@ -111,9 +105,11 @@ toohot:
 	clr PWR
 	ret
 twoscomp:
+	push psw
 	cpl a
 	inc a
 	mov difference, a
+	pop psw
 	sjmp pos
 	
 ;DecTskTime - decrements the time left for holding
@@ -166,12 +162,7 @@ InitTimer0:
 	clr holding
 	mov desiredTemp, #20
 	mov TH0, #high(T0_RELOAD)
-	mov TL0, #low(T0_RELOAD)	;initial frequency of genereated function
-	
-	;clr TR0
-	;clr TF0
-	;has a 20 ms delay so need 50 to make second (can only go to like 23 ms)
-
+	mov TL0, #low(T0_RELOAD)
 	setb TR0	;start timer 1
 	setb ET0
 	ret
