@@ -68,7 +68,6 @@ ENDMAC
 ;and copy the results from r1 back into desired variable after calling this
 ;switch0=inc 1, switch1 = dec1, switch2 = inc5, switch3 = dec5, switch4 = inc 10, switch5 = dec10
 changeTime:
-	mov LEDRA, #10101010b	;remove when testing is done	
 	mov a, swa
 	jnb acc.0, noInc1
 switchOff1:
@@ -176,13 +175,10 @@ switchOff10d:
 noRollDown10:	
 noManualDA10:
 noDec10: 
-
-mov LEDRA, #0	;remove when testing is done
-ret
+	ret
 
 ;the loop for soakTemp changing. Press key3 to go onto next loop
 VarSelect:
-	clr ET1
 selectSoakTemp: 
 	lcall clear_screen
 selectSoakTemp1:
@@ -241,8 +237,10 @@ selectSoakTime1:
 	LCD_send_character('c',#0C7H)
 	LCD_send_character('s',#0C8H)
 	LCD_send_character(':',#0C9H)
+	
 	LCD_send_number(soakTimeMin,#0CBH,#2,#0)
-	LCD_send_number(soakTimeSec,#0CDH,#2,#0)
+	LCD_send_character(':',#0CDH)
+	LCD_send_number(soakTimeSec,#0CEH,#2,#0)
 	
 	jb key.3, nodebounceToSoakTimeMin
 	jnb key.3, $
@@ -280,7 +278,8 @@ selectSoakTimeMin1:
 	LCD_send_character(':',#0C9H)
 	
 	LCD_send_number(soakTimeMin,#0CBH,#2,#0)
-	LCD_send_number(soakTimeSec,#0CDH,#2,#0)
+	LCD_send_character(':',#0CDH)
+	LCD_send_number(soakTimeSec,#0CEH,#2,#0)
 	jb key.3, nodebounceToReflowTemp
 	jnb key.3, $
 	ljmp selectReflowTemp
@@ -351,7 +350,8 @@ selectReflowTime1:
 	LCD_send_character(':',#0C9H)
 	
 	LCD_send_number(reflowTimeMin,#0CBH,#2,#0)
-	LCD_send_number(reflowTimeSec,#0CDH,#2,#0)
+	LCD_send_character(':',#0CDH)
+	LCD_send_number(reflowTimeSec,#0CEH,#2,#0)
 	jb key.3, nodebounceToReflowTimeMin
 	jnb key.3, $
 	ljmp selectReflowTimeMin
@@ -388,10 +388,10 @@ selectReflowTimeMin1:
 	LCD_send_character(':',#0C9H)
 	
 	LCD_send_number(reflowTimeMin,#0CBH,#2,#0)
-	LCD_send_number(reflowTimeSec,#0CDH,#2,#0)
+	LCD_send_character(':',#0CDH)
+	LCD_send_number(reflowTimeSec,#0CEH,#2,#0)
 	jb key.3, nodebounceToReturn
 	jnb key.3, $
-	setb ET1
 	ret
 noDebounceToReturn:
 	mov r1, reflowTimeMin
