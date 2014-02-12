@@ -167,7 +167,6 @@ s1_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L1
 	lcall Display
-	lcall Delay
 	jnb Pwmdone, s1_loop	
 	
 s2_Soak:
@@ -321,6 +320,11 @@ hexLUT:
 Display:
 	mov a, SWC ; Read switches 17 and 16
 	jb acc.1, doDisplay ; if * pressed, jumps display code
+	mov a, #1111111B
+	mov HEX3, a
+	mov HEX2, a
+	mov HEX1, a
+	mov HEX0, a
     ret
     
     doDisplay:
@@ -347,7 +351,7 @@ Display:
     movc A, @A+dptr
     mov HEX3, A
 
-	lcall Delay
+	lcall Wait1Sec
 	
 	ret
 		
