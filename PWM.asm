@@ -63,6 +63,7 @@ falseStart:
 ;rampf - ISR function for when in ramping mode
 
 rampf:
+	clr overshoot
 	lcall tempadjust
 	clr c
 	mov a, #Range
@@ -71,12 +72,12 @@ rampf:
 	ret
 doneRamp:
 	setb PWMdone
+	setb overshoot
 	ret
 	
 ;holdf - ISR function for when in holding mode
 
 holdf:
-	lcall tempAdjust
 	mov a, TskSec
 	jnz NotZero
 	mov a, TskMin
@@ -86,6 +87,26 @@ holdf:
 	ret
 NotZero:
 	lcall decTskTime
+	jb overshoot, transition
+	lcall tempAdjust
+	ret
+	
+Transition:
+	mov a, temperature
+	subb a, desiredTemp
+	jnz keepWaiting
+	clr overshoot
+	ret
+keepWaiting:
+	mov a, desiredTemp
+	subb a, temperature
+	jb acc.7, done ; if our temperature is greater than desiredTemp, keep letting it fall
+	subb a, #RANGE
+	jb acc.7, doneTransition
+	clr overshoot
+	ret
+DoneTransition:
+	clr PWR
 	ret
 	
 ;tempAdjust - checks desired vs real temperature and sets or clears PWR
