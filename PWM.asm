@@ -63,6 +63,8 @@ falseStart:
 ;rampf - ISR function for when in ramping mode
 
 rampf:
+	mov tskMin, #0
+	mov tskSec, #0
 	clr overshoot
 	lcall tempadjust
 	clr c
