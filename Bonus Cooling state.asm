@@ -153,6 +153,7 @@ s0_loop:
 	jnb KEY.3, s1_RampToSoak ; if Key 3 pressed, jumps to s1_RampToSoak
 	jnb KEY.2, s6_SetVars 		 ; if Key 2 pressed, jumps s6_SetVars
 	lcall Display_LCD_L0
+	lcall Display
 	sjmp s0_loop
 
 s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
@@ -160,53 +161,68 @@ s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	lcall clear_screen
 	setTemp(soakTemp)
 	lcall Display_LCD_L1
+	lcall Display
 	lcall buzz1Sec
 s1_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L1
+	lcall Display
+	lcall Delay
 	jnb Pwmdone, s1_loop	
 	
 s2_Soak:
 	lcall clear_screen
 	HoldTemp(soakTimeMin, soakTimeSec)
 	lcall Display_LCD_L2
+	lcall Display
 	lcall buzz1Sec
 s2_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L2
+	lcall Display
 	jnb Pwmdone, s2_loop
 
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
 	lcall clear_screen
 	SetTemp(ReflowTemp)
 	lcall Display_LCD_L3
+	lcall Display
 	lcall buzz1Sec
 s3_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L3
+	lcall Display
 	jnb Pwmdone, s3_loop
 
 s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
 	lcall clear_screen
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
 	lcall Display_LCD_L4
+	lcall Display
 	lcall buzz1Sec
+	
 	lcall Display_LCD_L4
+	lcall Display
 	lcall buzz1Sec
+	
 	lcall Display_LCD_L4
+	lcall Display
 	lcall buzz1Sec
 s4_loop:
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L4
+	lcall Display
 	jnb Pwmdone, s4_loop
 
 s5_Cooling: 			;moves to s6_SetVars when temp is less than 60 degrees
 	lcall clear_screen
 	setTemp(#60)
 	lcall Display_LCD_DOOR
+	lcall Display
 	push AR0
 	mov R0, #3
 Cooling_Buzzer:
+	lcall Display
 	lcall buzz1sec
 	lcall wait1sec
 	djnz R0, Cooling_buzzer
@@ -217,16 +233,20 @@ Cooling_Buzzer:
 loopfor5:	
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L5
-	jnb Pwmdone, doorcheckloop
+	lcall Display
+	jnb Pwmdone, doorcheckloop ;wtf is going here 
 	ljmp s0_idle
 doorcheckloop:
 	lcall wait1sec
+	lcall Display
 	djnz R5, loopfor5
 	ljmp doorCheck
-		
+
+;probs don't need this		
 s5_loop:
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L5
+	lcall Display
 	jnb Pwmdone, s5_loop
 	ljmp s0_idle
 JumpToIdle:
@@ -292,20 +312,48 @@ doorCheck:
 dooropen:
 	ljmp s5_loop
 	
+; Look-up table for 7-seg displays
+hexLUT:
+    DB 0C0H, 0F9H, 0A4H, 0B0H, 099H        ; 0 TO 4
+    DB 092H, 082H, 0F8H, 080H, 090H        ; 4 TO 9
+
+
+Display:
+	mov a, SWC ; Read switches 17 and 16
+	jb acc.1, doDisplay ; if * pressed, jumps display code
+    ret
+    
+    doDisplay:
+	mov x+0, temperature
+	mov x+1, #0
+	lcall hex2bcd
+	
+	mov dptr, #hexLUT
+	mov HEX0, #1000110b
+; Display Digit 0
+    mov A, bcd+0
+    anl a, #0fh
+    movc A, @A+dptr
+    mov HEX1, A
+; Display Digit 1
+    mov A, bcd+0
+    swap a
+    anl a, #0fh
+    movc A, @A+dptr
+    mov HEX2, A
+; Display Digit 2    
+    mov A, bcd+1
+    anl a, #0fh
+    movc A, @A+dptr
+    mov HEX3, A
+
+	lcall Delay
+	
+	ret
 		
 END
 
-********************************************************************
 
-
-
-
-
-	
-
-	
-
-	
-
-
+    
+    
 	
