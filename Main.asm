@@ -120,6 +120,7 @@ myprogram:
 	
 	mov P0MOD, #00111110B
 	mov P1MOD, #10000000B
+	mov P2MOD, #00000000B
 	mov P3MOD, #00000010B
 	setb EA  ; Enable all interrupts
 	
