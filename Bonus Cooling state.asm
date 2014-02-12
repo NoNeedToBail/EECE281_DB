@@ -19,7 +19,7 @@ TIMER1_RELOAD EQU 65536-(CLK/(12*FREQ_1))
 PWR EQU P1.7
 T0_Freq EQU 200
 T0_RELOAD EQU 65536-(CLK/(12*T0_Freq))
-RANGE EQU 5
+RANGE EQU 25
 
 ;TempDisp
 BAUD   EQU 115200
@@ -86,6 +86,7 @@ BSEG
 	mf:			dbit	1
 	emergency:	dbit	1
 	spaces:		dbit	1		;for leading 0's
+	overshoot:	dbit	1
 	
 CSEG
 
