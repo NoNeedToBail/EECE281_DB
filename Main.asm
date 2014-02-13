@@ -19,7 +19,7 @@ TIMER1_RELOAD EQU 65536-(CLK/(12*FREQ_1))
 PWR EQU P1.7
 T0_Freq EQU 200
 T0_RELOAD EQU 65536-(CLK/(12*T0_Freq))
-RANGE EQU 25
+RANGE EQU 5
 
 ;TempDisp
 BAUD   EQU 115200
@@ -111,13 +111,13 @@ myprogram:
 	lcall Init_Temp
 	mov TMOD, #00010001b ; Timers 1 and 0 in 16-bit mode
 	
-	mov soakTemp, #40
-	mov soakTimeMin, #2
-	mov soakTimeSec, #0
+	mov soakTemp, #150
+	mov soakTimeMin, #1
+	mov soakTimeSec, #30h
 	
-	mov reflowTemp, #80
-	mov reflowTimeMin, #0
-	mov reflowTimeSec, #10h
+	mov reflowTemp, #217
+	mov reflowTimeMin, #1
+	mov reflowTimeSec, #0
 	
 	mov P0MOD, #00111110B
 	mov P1MOD, #10000000B
@@ -160,7 +160,9 @@ s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	lcall clear_screen
 	setTemp(soakTemp)
 	lcall Display_LCD_L1
-	lcall buzz1Sec
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
 s1_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L1
@@ -170,7 +172,9 @@ s2_Soak:
 	lcall clear_screen
 	HoldTemp(soakTimeMin, soakTimeSec)
 	lcall Display_LCD_L2
-	lcall buzz1Sec
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
 s2_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L2
@@ -180,7 +184,9 @@ s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
 	lcall clear_screen
 	SetTemp(ReflowTemp)
 	lcall Display_LCD_L3
-	lcall buzz1Sec
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
 s3_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L3
@@ -189,12 +195,9 @@ s3_loop:
 s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
 	lcall clear_screen
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
-	lcall Display_LCD_L4
-	lcall buzz1Sec
-	lcall Display_LCD_L4
-	lcall buzz1Sec
-	lcall Display_LCD_L4
-	lcall buzz1Sec
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
 s4_loop:
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L4
@@ -204,19 +207,26 @@ s5_Cooling: 			;moves to s0_idle when temp is less than 60 degrees
 	lcall clear_screen
 	setTemp(#60)
 	lcall Display_LCD_DOOR
-	push AR0
-	mov R0, #3
-Cooling_Buzzer:
-	lcall buzz1sec
-	lcall wait1sec
-	djnz R0, Cooling_buzzer
-	pop AR0
+	setb ET1
+	lcall Wait1Sec
+	lcall Wait1Sec
+	lcall Wait1Sec
+	clr ET1
 	lcall clear_screen
 s5_loop:
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L5
 	jnb Pwmdone, s5_loop
+	setTemp(#20)
+	mov R0, #6
+CoolingBuzzer:
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
+	lcall Display_LCD_L5
+	djnz R0, CoolingBuzzer
 	ljmp s0_idle
+
 JumpToIdle:
 	ljmp s0_idle
 	
@@ -225,7 +235,6 @@ JumpToIdle:
 ;=================================================================
 	
 ISR_timer1:
-	
 	mov TH1, #high(TIMER1_RELOAD)
     mov TL1, #low(TIMER1_RELOAD)
     cpl BUZZERPIN
@@ -247,12 +256,6 @@ WaitL2:
 	pop AR2
 	pop AR1
 	pop AR0
-	ret
-	
-Buzz1Sec:
-	setb ET1
-	lcall Wait1Sec
-	clr ET1
 	ret
 	
 InitTimer1:
