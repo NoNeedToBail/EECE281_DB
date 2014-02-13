@@ -19,7 +19,6 @@ TIMER1_RELOAD EQU 65536-(CLK/(12*FREQ_1))
 PWR EQU P1.7
 T0_Freq EQU 200
 T0_RELOAD EQU 65536-(CLK/(12*T0_Freq))
-RANGE EQU 5
 
 ;TempDisp
 BAUD   EQU 115200
@@ -62,6 +61,7 @@ DSEG at 30h
 	TskSec:			ds	1
 	count:			ds	3
 	difference:		ds	1
+	range:			ds	1
 	
 	;Main Variables
 	soakTemp:		ds	1
@@ -72,7 +72,6 @@ DSEG at 30h
 	reflowTempBCD:	ds	2
 	reflowTimeSec:	ds	1
 	reflowTimeMin:	ds	1
-	state:			ds	1
 	
 	;LCD Variables
 	timer1_count:	ds	1
@@ -104,6 +103,8 @@ myprogram:
 	mov HEX2, a
 	mov HEX1, a
 	mov HEX0, a
+	
+	mov range, #5
 	
 	lcall start_LCD
 	lcall InitTimer0
@@ -159,6 +160,7 @@ s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	jnb KEY.3, s1_RampToSoak
 	lcall clear_screen
 	setTemp(soakTemp)
+	mov range, #25
 	lcall Display_LCD_L1
 	setb ET1
 	lcall Wait1Sec
@@ -183,6 +185,7 @@ s2_loop:
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
 	lcall clear_screen
 	SetTemp(ReflowTemp)
+	mov range, #5
 	lcall Display_LCD_L3
 	setb ET1
 	lcall Wait1Sec
@@ -206,6 +209,7 @@ s4_loop:
 s5_Cooling: 			;moves to s0_idle when temp is less than 60 degrees
 	lcall clear_screen
 	setTemp(#60)
+	mov range, #0
 	lcall Display_LCD_DOOR
 	setb ET1
 	lcall Wait1Sec
@@ -218,13 +222,15 @@ s5_loop:
 	lcall Display_LCD_L5
 	jnb Pwmdone, s5_loop
 	setTemp(#20)
-	mov R0, #6
+	mov R5, #6
 CoolingBuzzer:
 	setb ET1
 	lcall Wait1Sec
-	clr ET1
 	lcall Display_LCD_L5
-	djnz R0, CoolingBuzzer
+	clr ET1
+	lcall Wait1Sec
+	lcall Display_LCD_L5
+	djnz R5, CoolingBuzzer
 	ljmp s0_idle
 
 JumpToIdle:
