@@ -68,7 +68,7 @@ rampf:
 	clr overshoot
 	lcall tempadjust
 	clr c
-	mov a, #Range
+	mov a, range
 	subb a, difference
 	jnc doneRamp
 	ret
@@ -103,7 +103,7 @@ keepWaiting:
 	mov a, desiredTemp
 	subb a, temperature
 	jb acc.7, doneTransition ; if our temperature is greater than desiredTemp, keep letting it fall
-	subb a, #RANGE
+	subb a, range
 	jb acc.7, doneTransition
 	clr overshoot
 	ret
