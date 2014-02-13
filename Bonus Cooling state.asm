@@ -121,8 +121,8 @@ myprogram:
 	mov soakTimeSec, #30h
 	
 	mov reflowTemp, #217
-	mov reflowTimeMin, #1
-	mov reflowTimeSec, #0
+	mov reflowTimeMin, #0
+	mov reflowTimeSec, #45h
 	
 	mov P0MOD, #00111110B
 	mov P1MOD, #10000000B
