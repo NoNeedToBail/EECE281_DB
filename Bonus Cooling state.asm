@@ -113,13 +113,13 @@ myprogram:
 	lcall Init_Temp
 	mov TMOD, #00010001b ; Timers 1 and 0 in 16-bit mode
 	
-	mov soakTemp, #40
-	mov soakTimeMin, #2
-	mov soakTimeSec, #0
+	mov soakTemp, #150
+	mov soakTimeMin, #1
+	mov soakTimeSec, #30h
 	
-	mov reflowTemp, #80
-	mov reflowTimeMin, #0
-	mov reflowTimeSec, #10h
+	mov reflowTemp, #217
+	mov reflowTimeMin, #1
+	mov reflowTimeSec, #0
 	
 	mov P0MOD, #00111110B
 	mov P1MOD, #10000000B
@@ -163,7 +163,9 @@ s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
 	setTemp(soakTemp)
 	lcall Display_LCD_L1
 	lcall Display
-	lcall buzz1Sec
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
 s1_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L1
@@ -175,7 +177,9 @@ s2_Soak:
 	HoldTemp(soakTimeMin, soakTimeSec)
 	lcall Display_LCD_L2
 	lcall Display
-	lcall buzz1Sec
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
 s2_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L2
@@ -187,9 +191,11 @@ s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
 	SetTemp(ReflowTemp)
 	lcall Display_LCD_L3
 	lcall Display
-	lcall buzz1Sec
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
 s3_loop:
-	jb emergency, s0_idle
+	jb emergency, jumpToIdle
 	lcall Display_LCD_L3
 	lcall Display
 	jnb Pwmdone, s3_loop
@@ -199,42 +205,35 @@ s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
 	lcall Display_LCD_L4
 	lcall Display
-	lcall buzz1Sec
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
 	
-	lcall Display_LCD_L4
-	lcall Display
-	lcall buzz1Sec
-	
-	lcall Display_LCD_L4
-	lcall Display
-	lcall buzz1Sec
 s4_loop:
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L4
 	lcall Display
 	jnb Pwmdone, s4_loop
 
-s5_Cooling: 			;moves to s6_SetVars when temp is less than 60 degrees
+s5_Cooling: 	;moves to s6_SetVars when temp is less than 60 degrees
 	lcall clear_screen
 	setTemp(#60)
 	lcall Display_LCD_DOOR
 	lcall Display
-	push AR0
-	mov R0, #3
-Cooling_Buzzer:
-	lcall Display
-	lcall buzz1sec
-	lcall wait1sec
-	djnz R0, Cooling_buzzer
-	pop AR0
-	lcall clear_screen
 	
+	setb ET1
+	lcall Wait1Sec
+	lcall Wait1Sec
+	lcall Wait1Sec
+	clr ET1
+		
 	mov R5, #WAIT
 loopfor5:	
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L5
 	lcall Display
-	jnb Pwmdone, doorcheckloop ;wtf is going here 
+	jnb Pwmdone, doorcheckloop 
+	lcall sixBeep
 	ljmp s0_idle
 doorcheckloop:
 	lcall wait1sec
@@ -242,19 +241,51 @@ doorcheckloop:
 	djnz R5, loopfor5
 	ljmp doorCheck
 
+jumpToIdle:
+	ljmp s0_idle
+
 ;probs don't need this		
 s5_loop:
-	jb emergency, jumpToIdle
+	jb emergency, backToIdle
 	lcall Display_LCD_L5
 	lcall Display
 	jnb Pwmdone, s5_loop
+	lcall sixBeep
 	ljmp s0_idle
-JumpToIdle:
+backToIdle:
+	lcall sixBeep
 	ljmp s0_idle
+	
 	
 ;=================================================================
 ; THE END OF THE STATE MACHINE. THANK YOU. WE'LL BE HERE ALL WEEK.
 ;=================================================================
+sixBeep: 
+setb ET1
+lcall Delay
+clr ET1
+lcall Delay
+setb ET1
+lcall Delay
+clr ET1
+lcall Delay
+setb ET1
+lcall Delay
+clr ET1
+lcall Delay
+setb ET1
+lcall Delay
+clr ET1
+lcall Delay
+setb ET1
+lcall Delay
+clr ET1
+lcall Delay
+setb ET1
+lcall Delay
+clr ET1
+ret	
+	
 	
 ISR_timer1:
 	
