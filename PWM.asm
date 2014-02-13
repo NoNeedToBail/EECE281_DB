@@ -88,8 +88,8 @@ holdf:
 	clr holding
 	ret
 NotZero:
-	lcall decTskTime
 	jb overshoot, transition
+	lcall decTskTime
 	lcall tempAdjust
 	ret
 	
@@ -102,7 +102,7 @@ Transition:
 keepWaiting:
 	mov a, desiredTemp
 	subb a, temperature
-	jb acc.7, done ; if our temperature is greater than desiredTemp, keep letting it fall
+	jb acc.7, doneTransition ; if our temperature is greater than desiredTemp, keep letting it fall
 	subb a, #RANGE
 	jb acc.7, doneTransition
 	clr overshoot
