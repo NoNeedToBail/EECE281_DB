@@ -74,7 +74,8 @@ DSEG at 30h
 	reflowTempBCD:	ds	2
 	reflowTimeSec:	ds	1
 	reflowTimeMin:	ds	1
-	state:			ds	1
+;	state:			ds	1
+;	range:			ds	1
 	
 	;LCD Variables
 	timer1_count:	ds	1
@@ -170,6 +171,7 @@ s1_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L1
 	lcall Display
+	lcall Wait1Sec
 	jnb Pwmdone, s1_loop	
 	
 s2_Soak:
@@ -184,6 +186,7 @@ s2_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L2
 	lcall Display
+	lcall Wait1Sec
 	jnb Pwmdone, s2_loop
 
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
@@ -198,6 +201,7 @@ s3_loop:
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L3
 	lcall Display
+	lcall Wait1Sec
 	jnb Pwmdone, s3_loop
 
 s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
@@ -213,6 +217,7 @@ s4_loop:
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L4
 	lcall Display
+	lcall Wait1Sec
 	jnb Pwmdone, s4_loop
 
 s5_Cooling: 	;moves to s6_SetVars when temp is less than 60 degrees
@@ -232,6 +237,7 @@ loopfor5:
 	jb emergency, jumpToIdle
 	lcall Display_LCD_L5
 	lcall Display
+	lcall Wait1Sec
 	jnb Pwmdone, doorcheckloop 
 	lcall sixBeep
 	ljmp s0_idle
@@ -249,6 +255,7 @@ s5_loop:
 	jb emergency, backToIdle
 	lcall Display_LCD_L5
 	lcall Display
+	lcall Wait1Sec
 	jnb Pwmdone, s5_loop
 	lcall sixBeep
 	ljmp s0_idle
@@ -261,29 +268,15 @@ backToIdle:
 ; THE END OF THE STATE MACHINE. THANK YOU. WE'LL BE HERE ALL WEEK.
 ;=================================================================
 sixBeep: 
-setb ET1
-lcall Delay
-clr ET1
-lcall Delay
-setb ET1
-lcall Delay
-clr ET1
-lcall Delay
-setb ET1
-lcall Delay
-clr ET1
-lcall Delay
-setb ET1
-lcall Delay
-clr ET1
-lcall Delay
-setb ET1
-lcall Delay
-clr ET1
-lcall Delay
-setb ET1
-lcall Delay
-clr ET1
+	setTemp(#20)
+	mov R0, #6
+CoolingBuzzer:
+	setb ET1
+	lcall Wait1Sec
+	clr ET1
+	lcall Display_LCD_L5
+	lcall Display
+	djnz R0, CoolingBuzzer
 ret	
 	
 	
@@ -382,8 +375,6 @@ Display:
     anl a, #0fh
     movc A, @A+dptr
     mov HEX3, A
-
-	lcall Wait1Sec
 	
 	ret
 		
