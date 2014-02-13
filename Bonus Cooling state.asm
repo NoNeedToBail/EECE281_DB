@@ -31,7 +31,7 @@ CE_ADC EQU  P0.3
 CE_EE  EQU  P0.4
 CE_RTC EQU  P0.5
 WAIT   EQU  5
-MINUS  EQU  0
+MINUS  EQU  10
 
 org 0000H
 	ljmp myprogram
@@ -154,10 +154,16 @@ s0_Idle: 				;state we reset to when stop buton/switch pressed
 s0_loop:
 	mov uniSec, #0
 	mov uniMin, #0
+	lcall Delay
+	lcall Delay
 	jnb KEY.3, s1_RampToSoak ; if Key 3 pressed, jumps to s1_RampToSoak
 	jnb KEY.2, s6_SetVars 		 ; if Key 2 pressed, jumps s6_SetVars
 	lcall Display_LCD_L0
+	lcall Delay
+	lcall Delay
 	lcall Display
+	lcall Delay
+	lcall Delay
 	sjmp s0_loop
 
 s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
@@ -210,8 +216,8 @@ s3_loop:
 
 s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
 	lcall clear_screen
-	lcall Display_LCD_L4
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
+	lcall Display_LCD_L4
 	lcall Display
 	setb ET1
 	lcall Wait1Sec
@@ -223,6 +229,10 @@ s4_loop:
 	lcall Display
 	lcall Wait1Sec
 	jnb Pwmdone, s4_loop
+	
+	sjmp s5_Cooling
+	jumpToIdle:
+	ljmp s0_idle
 
 s5_Cooling: 	;moves to s6_SetVars when temp is less than 60 degrees
 	lcall clear_screen
@@ -236,6 +246,7 @@ s5_Cooling: 	;moves to s6_SetVars when temp is less than 60 degrees
 	lcall Wait1Sec
 	lcall Wait1Sec
 	clr ET1
+	lcall clear_screen
 		
 	mov R5, #WAIT
 loopfor5:	
@@ -243,6 +254,7 @@ loopfor5:
 	lcall Display_LCD_L5
 	lcall Display
 	lcall Wait1Sec
+	setTemp(#20)
 	jnb Pwmdone, doorcheckloop 
 	lcall sixBeep
 	ljmp s0_idle
@@ -252,28 +264,23 @@ doorcheckloop:
 	djnz R5, loopfor5
 	ljmp doorCheck
 
-jumpToIdle:
-	ljmp s0_idle
-
-;probs don't need this		
 s5_loop:
-	jb emergency, backToIdle
+	jb emergency, jumpToIdle
 	lcall Display_LCD_L5
 	lcall Display
 	lcall Wait1Sec
+	setTemp(#20)
 	jnb Pwmdone, s5_loop
 	lcall sixBeep
 	ljmp s0_idle
-backToIdle:
-	lcall sixBeep
-	ljmp s0_idle
+
 	
 	
 ;=================================================================
 ; THE END OF THE STATE MACHINE. THANK YOU. WE'LL BE HERE ALL WEEK.
 ;=================================================================
 sixBeep: 
-	setTemp(#20)
+	
 	mov R5, #6
 CoolingBuzzer:
 	setb ET1

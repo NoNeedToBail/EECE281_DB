@@ -197,8 +197,8 @@ s3_loop:
 
 s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
 	lcall clear_screen
-	lcall Display_LCD_L4
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
+	lcall Display_LCD_L4
 	setb ET1
 	lcall Wait1Sec
 	clr ET1
