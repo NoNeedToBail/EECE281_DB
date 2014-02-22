@@ -1,19 +1,20 @@
-;=====================================
-;FREQ   EQU 33333333
-;BAUD   EQU 115200
-;T2LOAD EQU 65536-(CLK/(32*BAUD))
+;=============================================================================
+;TempDisp.asm - library of functions for reading and outputting temperature by the serial port
+;Required "EQU"s
+;FREQ: 33333333
+;BAUD: 115200
+;T2LOAD: 65536-(CLK/(32*BAUD))
 
-;MISO   EQU  P0.0 
-;MOSI   EQU  P0.1 
-;SCLK   EQU  P0.2
-;CE_ADC EQU  P0.3
-;CE_EE  EQU  P0.4
-;CE_RTC EQU  P0.5 
+;Required Pins:
+;MISO
+;MOSI 
+;SCLK
+;CE_ADC
+;CE_EE
+;CE_RTC
 
-;DSEG at 30H
-;op:     ds 1
-;$include(math16.asm)
-;Please include the stuff above, if you guys didn't include these already
+;This library needs math16.asm to function
+;============================================================================
 
 Init_Temp:; the function above is the function u guys should call in the beginning to initialize our crap
 	setb CE_ADC
@@ -42,14 +43,13 @@ Get_temp:
 	push AR7
 	
 	clr TF2
-	mov b, #0  ; Read channel 0
+	mov b, #0  ; Read channel 0 - the oven temperature
 	lcall Read_ADC_Channel
 	
-	mov x+1, R7
+	mov x+1, R7 ;mov read values to x
 	mov x+0, R6
 
-	; all the gay math
-	Load_y(62)
+	Load_y(62) ;together, the next 2 functions multiply x by 125
 	lcall mul16
 	mov R4, x+1
 
@@ -60,7 +60,7 @@ Get_temp:
 	lcall mul16
 	mov R5, x+1
 	
-	mov x+0, R4
+	mov x+0, R4 ;divide x by 256
 	mov x+1, #0
 	mov y+0, R5
 	mov y+1, #0
@@ -69,16 +69,15 @@ Get_temp:
 	Load_y(273)
 	lcall sub16
 	
-	mov b, #1	;read channel 1
+	mov b, #1	;read channel 1 - the room temperature
 	lcall Read_ADC_Channel
 	mov y+0, x+0
 	mov y+1, x+1
 	mov x+0, R6
-	mov x+1, R7
+	mov x+1, R7 ;add room temperature to oven temperature
 	
 	lcall add16
-	mov temperature, x
-	lcall hex2bcd
+	mov temperature, x ;store final value in x
 	
 	pop AR7
 	pop AR6
