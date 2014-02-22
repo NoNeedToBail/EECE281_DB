@@ -211,7 +211,7 @@ s4_loop:
 s5_Cooling: 			;moves to s0_idle when temp is less than 60 degrees
 	lcall clear_screen
 	setTemp(#60)
-	mov range, #0
+	mov range, #0 ;we want it to be exactly 60 when it says it is done
 	lcall Display_LCD_DOOR
 	setb ET1 ;long buzzer
 	lcall Wait1Sec
