@@ -89,7 +89,8 @@ Clr_loop:
 ;| Automatically prints spaces 												   |
 ;| instead of zeroes.(Except for LSD)										   |
 ; -----------------------------------------------------------------------------
-LCD_send_number MAC (%0,%1,%2,%3) ; %0 is num, %1 is position, %2 is # of digits (1-3) sends an 8-bit number to LCD
+LCD_send_number MAC (%0,%1,%2,%3) ; %0 is num, %1 is position, %2 is # of digits (1-3) sends an 8-bit number to LCD,
+;%3 defines whether it needs to be converted to bcd
 	push Acc
 	push psw
 	mov bcd+1, #0
@@ -194,7 +195,7 @@ ENDMAC
 ;| screen will refresh too fast and will be unreadable.|
 ; -----------------------------------------------------
 	
-Display_LCD: ;Display the common values among all the states
+Display_LCD: ;Display the common values among most states
 	LCD_send_character('T',#80H)
 	LCD_send_character('o',#81H)
 	LCD_send_character('=',#82H)
@@ -203,7 +204,7 @@ Display_LCD: ;Display the common values among all the states
 	
 	lcall Display_LCD_Time
 	
-	mov a, tskSec
+	mov a, tskSec ;if our job time is 0, then we are ramping up to a temperature and should display accordingly
 	jnz display_job_time
 	mov a, tskMin
 	jnz display_job_time
@@ -215,7 +216,7 @@ Display_LCD: ;Display the common values among all the states
 	LCD_send_character('C',#8FH)
 	ret
 	
-Display_job_time:
+Display_job_time: ;display how long is left in holding
 	LCD_send_number(tskMin, #89H, #1, #0)
 	LCD_send_character(':',#8AH)
 	LCD_send_number(tskSec, #8BH, #2, #0)
@@ -267,6 +268,8 @@ Display_LCD_DOOR: ;OPEN OVEN DOOR
 	LCD_send_character('o',#0CDH)
 	LCD_send_character('r',#0CEH)
 	ret
+	
+;the following states all output the name of the state to the second line of the LCD display
 	
 Display_LCD_L1: ; ramp to soak
 	lcall Display_LCD
