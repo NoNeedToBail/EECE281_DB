@@ -34,10 +34,10 @@ org 0000H
 	ljmp myprogram
 	
 org 000BH
-	ljmp PWMISR
+	ljmp PWMISR ;ISR for controlling temperature of oven and sending characters via the serial port
 	
 org 001BH
-	ljmp ISR_timer1
+	ljmp ISR_timer1 ;ISR for the buzzer
 
 $include(PWM.asm)
 $include(LCD.asm)
@@ -104,12 +104,13 @@ myprogram:
 	mov HEX1, a
 	mov HEX0, a
 	
+	;default value for the acceptable range
 	mov range, #5
 	
-	lcall start_LCD
-	lcall InitTimer0
-	lcall InitTimer1
-	lcall Init_Temp
+	lcall start_LCD ;Starts up the LCD
+	lcall InitTimer0 ;Initialization required for pulse width modulation
+	lcall InitTimer1 ;Initialization required for the buzzer
+	lcall Init_Temp ;Initialization required for temperature measurement
 	mov TMOD, #00010001b ; Timers 1 and 0 in 16-bit mode
 	
 	mov soakTemp, #150
@@ -131,8 +132,8 @@ myprogram:
 SendTemp:
 	mov x+0, temperature
 	mov x+1, #0
-	lcall hex2bcd
-	lcall send_Number
+	lcall hex2bcd ;temperature converted to bcd and stored in bcd variable
+	lcall send_Number ;sends number in bcd variable out the serial port
 	ret
 
 ;===============================================================
@@ -140,16 +141,16 @@ SendTemp:
 ;===============================================================
 
 s6_SetVars: 			;moves back to s0_Idle after all varibles have been set/after buton pushed
-	jnb KEY.2, s6_SetVars
+	jnb KEY.2, s6_SetVars ;debounce
 	lcall varSelect
 	ljmp s0_idle
 	
 s0_Idle: 				;state we reset to when stop buton/switch pressed
 	lcall clear_screen
-	SetTemp(#0)
-	clr emergency
+	SetTemp(#0) ;oven should be off while in idle
+	clr emergency ;at idle so no emergency stop
 s0_loop:
-	mov uniSec, #0
+	mov uniSec, #0	;keep timer at 0 while in idle state
 	mov uniMin, #0
 	jnb KEY.3, s1_RampToSoak ; if Key 3 pressed, jumps to s1_RampToSoak
 	jnb KEY.2, s6_SetVars 		 ; if Key 2 pressed, jumps s6_SetVars
@@ -157,49 +158,49 @@ s0_loop:
 	sjmp s0_loop
 
 s1_RampToSoak: 			;moves to s2_Soak when the desired soak temp is reached
-	jnb KEY.3, s1_RampToSoak
+	jnb KEY.3, s1_RampToSoak ;debounce
 	lcall clear_screen
 	setTemp(soakTemp)
-	mov range, #25
+	mov range, #25 ;rapid increase in temperature means we need a larger acceptable range to avoid overshooting goal temp
 	lcall Display_LCD_L1
-	setb ET1
+	setb ET1 ;buzzer on
 	lcall Wait1Sec
-	clr ET1
+	clr ET1 ;buzzer off
 s1_loop:
-	jb emergency, s0_idle
+	jb emergency, s0_idle	;if stop button pressed, go to idle
 	lcall Display_LCD_L1
-	jnb Pwmdone, s1_loop	
+	jnb Pwmdone, s1_loop	;wait for ramp to finish then go to S2
 	
 s2_Soak:
 	lcall clear_screen
 	HoldTemp(soakTimeMin, soakTimeSec)
 	lcall Display_LCD_L2
-	setb ET1
+	setb ET1 ;buzzer on
 	lcall Wait1Sec
-	clr ET1
+	clr ET1 ;buzzer off
 s2_loop:
-	jb emergency, s0_idle
+	jb emergency, s0_idle	;if stop button pressed, go to idle
 	lcall Display_LCD_L2
-	jnb Pwmdone, s2_loop
+	jnb Pwmdone, s2_loop	;wait for ramp to finish then go to S3
 
 s3_RampToPeak: 			;moves to s4_Reflow when the desired reflow temp is reached
 	lcall clear_screen
 	SetTemp(ReflowTemp)
-	mov range, #5
+	mov range, #5	;lower acceptable range to avoid burning board
 	lcall Display_LCD_L3
-	setb ET1
+	setb ET1 ;buzzer on
 	lcall Wait1Sec
-	clr ET1
+	clr ET1 ;buzzer off
 s3_loop:
 	jb emergency, s0_idle
 	lcall Display_LCD_L3
 	jnb Pwmdone, s3_loop
 
-s4_Reflow: 				;moves to s5_Cooling after y seconds (y=relfow time)
+s4_Reflow: 				;moves to s5_Cooling after y seconds (y=reflow time)
 	lcall clear_screen
 	HoldTemp(ReflowTimeMin, ReflowTimeSec)
 	lcall Display_LCD_L4
-	setb ET1
+	setb ET1 ;buzzer
 	lcall Wait1Sec
 	clr ET1
 s4_loop:
@@ -212,7 +213,7 @@ s5_Cooling: 			;moves to s0_idle when temp is less than 60 degrees
 	setTemp(#60)
 	mov range, #0
 	lcall Display_LCD_DOOR
-	setb ET1
+	setb ET1 ;long buzzer
 	lcall Wait1Sec
 	lcall Wait1Sec
 	lcall Wait1Sec
@@ -223,11 +224,11 @@ s5_loop:
 	lcall Display_LCD_L5
 	jnb Pwmdone, s5_loop
 	setTemp(#20)
-	mov R5, #6
+	mov R5, #6 ;done cooling, need to buzz 6 times
 CoolingBuzzer:
 	setb ET1
 	lcall Wait1Sec
-	lcall Display_LCD_L5
+	lcall Display_LCD_L5 ;need to call display so it doesn't lock up during buzzer
 	clr ET1
 	lcall Wait1Sec
 	lcall Display_LCD_L5
@@ -241,7 +242,7 @@ JumpToIdle:
 ; THE END OF THE STATE MACHINE. THANK YOU. WE'LL BE HERE ALL WEEK.
 ;=================================================================
 	
-ISR_timer1:
+ISR_timer1: ;when ET1 is enabled, complements our buzzer pin with the specified frequency
 	mov TH1, #high(TIMER1_RELOAD)
     mov TL1, #low(TIMER1_RELOAD)
     cpl BUZZERPIN
@@ -266,7 +267,7 @@ WaitL2:
 	ret
 	
 InitTimer1:
-	mov timer1_count, #200
+	mov timer1_count, #200 ; counter to slow down the running of the ISR
 	clr TR1 ; Disable timer 1
 	clr TF1
     mov TH1, #high(TIMER1_RELOAD)
