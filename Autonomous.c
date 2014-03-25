@@ -18,6 +18,7 @@
 #define M2P P0_0
 #define M2N P0_1
 
+void wait(long);
 int getDistance(int sensor);
 
 typedef struct motor{
@@ -131,6 +132,37 @@ int getDistance(int sensor){
 	} else {
 		return 6;
 	}
+}
+
+void parallelpark () {
+	motor1.power = 80;
+	motor2.power = 80;
+	motor1.direction = 1;
+	motor2.direction = 1;
+	wait(1);
+
+	motor1.power = 50;
+	motor2.power = 0;
+	motor1.direction = 0;
+	motor2.direction = 0;
+	wait(1.5);
+
+	motor1.power = 75;
+	motor2.power = 75;
+	wait(1);
+	
+	motor1.power = 0;
+	motor2.power = 80;
+	wait(1);
+	
+	motor1.power = 0;
+	motor2.power = 0;
+	return;
+}
+
+void wait(long time){
+	long time1= systime+time*10000;
+	while(!(time1 < systime));
 }
 	
 unsigned char _c51_external_startup(void) {
