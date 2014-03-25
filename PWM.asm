@@ -1,5 +1,3 @@
-$NOLIST
-
 ;==============================================================
 ; PWM.asm: Library of functions for setting temperature.
 ; Variables required:
@@ -207,6 +205,5 @@ incUniTime:
 	cjne a, #01100000b, notEq	;minutes overflow
 	mov unimin, #00h
 noteq:
-	ret	
+	ret
 	
-$LIST
