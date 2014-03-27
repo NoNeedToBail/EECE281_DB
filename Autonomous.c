@@ -19,7 +19,9 @@
 #define M2N P0_1
 
 void wait(long);
+void parallelpark();
 int getDistance(int sensor);
+void compareVoltage(unsigned char chan1, unsigned char chan2);
 
 typedef struct motor{
 	int power;
@@ -31,10 +33,29 @@ volatile unsigned pwmcount;
 volatile long unsigned systime = 0;
 volatile int distance = 10;
 volatile int totalpower = 50;
-volatile int autonomous = 1;
+volatile int autonomous = 0;
 motor motor1, motor2;
 
+
+//         LP51B    MCP3004
+
+//---------------------------
+
+// MISO  -  P1.5  - pin 10
+// SCK   -  P1.6  - pin 11
+// MOSI  -  P1.7  - pin 9
+// CE*   -  P1.4  - pin 8
+// 5V  -  VCC   - pins 13, 14
+// 0V    -  GND   - pins 7, 12
+// CH0   -        - pin 1
+// CH1   -        - pin 2
+// CH2   -        - pin 3
+// CH3   -        - pin 4
+
+
+
 void main (void) {
+	parallelpark();
 	while(1);
 }
 
@@ -135,8 +156,8 @@ int getDistance(int sensor){
 }
 
 void parallelpark () {
-	motor1.power = 80;
-	motor2.power = 80;
+	motor1.power = 85;
+	motor2.power = 85;
 	motor1.direction = 1;
 	motor2.direction = 1;
 	wait(1);
@@ -145,14 +166,14 @@ void parallelpark () {
 	motor2.power = 0;
 	motor1.direction = 0;
 	motor2.direction = 0;
-	wait(1.5);
+	wait(1);
 
 	motor1.power = 75;
 	motor2.power = 75;
 	wait(1);
 	
 	motor1.power = 0;
-	motor2.power = 80;
+	motor2.power = 45;
 	wait(1);
 	
 	motor1.power = 0;
@@ -165,6 +186,48 @@ void wait(long time){
 	while(!(time1 < systime));
 }
 	
+void SPIWrite(unsigned char value)
+{
+	SPSTA&=(~SPIF); // Clear the SPIF flag in SPSTA
+	SPDAT=value;
+	while((SPSTA & SPIF)!=SPIF); //Wait for transmission to end
+}
+
+// Read 10 bits from the MCP3004 ADC converter
+unsigned int GetADC(unsigned char channel)
+{
+	unsigned int adc;
+
+	// initialize the SPI port to read the MCP3004 ADC attached to it.
+	SPCON&=(~SPEN); // Disable SPI
+	SPCON=MSTR|CPOL|CPHA|SPR1|SPR0|SSDIS;
+	SPCON|=SPEN; // Enable SPI
+	
+	P1_4=0; // Activate the MCP3004 ADC.
+	SPIWrite(channel|0x18);	// Send start bit, single/diff* bit, D2, D1, and D0 bits.
+	for(adc=0; adc<10; adc++); // Wait for S/H to setup
+	SPIWrite(0x55); // Read bits 9 down to 4
+	adc=((SPDAT&0x3f)*0x100);
+	SPIWrite(0x55);// Read bits 3 down to 0
+	P1_4=1; // Deactivate the MCP3004 ADC.
+	adc+=(SPDAT&0xf0); // SPDR contains the low part of the result. 
+	adc>>=4;
+		
+	return adc;
+}
+
+float voltage (unsigned char channel)
+{
+	return ( (GetADC(channel)*5)/1023.0 ); // VCC=5V (measured)
+}
+
+void compareVoltage(unsigned char chan1, unsigned char chan2) {
+	float v1,v2;
+	v1=voltage(chan1);
+	v2=voltage(chan2);
+	printf("Channel %c = %dV \n\r Channel %c = %dV \n\r Chan %c - %c = %dV",chan1,v1,chan2,v2,chan1,chan2,v1-v2);
+	return;
+}
 unsigned char _c51_external_startup(void) {
 	P0M0=0;	P0M1=0;
 	P1M0=0;	P1M1=0;
