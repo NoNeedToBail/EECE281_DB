@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <at89lp51rd2.h>
+//#include <Commands.h>
  
 #define CLK 22118400L
 #define BAUD 115200L
@@ -17,10 +19,28 @@
 #define M1N P0_3
 #define M2P P0_0
 #define M2N P0_1
+#define shortDistance 5 
+#define medDistance 5
+#define longDistance 5
+#define FLIP 0B_000
+#define CLOSE 0B_110
+#define FAR 0B_011
+#define PARK 0B_101
+#define MIN 0
 
 void wait(long);
 void parallelpark();
+void turn180();
+void changeDistance(int);
 int getDistance(int sensor);
+unsigned char rx_byte (int min);
+int receive_command (void);
+void implement_command (int);
+unsigned int GetADC(unsigned char channel);
+void wait_bit_time (void);
+void wait_one_and_half_bit_time (void);
+
+
 void compareVoltage(unsigned char chan1, unsigned char chan2);
 
 typedef struct motor{
@@ -35,6 +55,7 @@ volatile int distance = 10;
 volatile int totalpower = 50;
 volatile int autonomous = 0;
 motor motor1, motor2;
+int start_receiving=0;
 
 
 //         LP51B    MCP3004
@@ -55,8 +76,23 @@ motor motor1, motor2;
 
 
 void main (void) {
-	parallelpark();
-	while(1);
+	int zeroCount=0;
+	int command;
+	int v;
+	while (1) {
+		if (zeroCount==2) {
+			autonomous=0;
+			command=receive_command();
+			implement_command(command);
+			printCommand(command);
+			zeroCount=0;
+			autonomous=1;
+		}
+		v=GetADC(0);
+		if (!(v>MIN)) zeroCount+=1;
+		else zeroCount=0;
+		wait_bit_time();
+	}
 }
 
 void theISR (void) interrupt 1 {
@@ -154,7 +190,17 @@ int getDistance(int sensor){
 		return 6;
 	}
 }
-
+void printCommand(int command){
+	if(command==FLIP)
+		printf("Recieved flip command \n");
+	else if (command == PARK)
+		printf("Received park command \n");
+	else if (command == CLOSE)
+		printf"Received clloser command \n");
+	else if (command == FAR)
+		printf("Received farther command \n");
+return;
+}
 void parallelpark () {
 	motor1.power = 85;
 	motor2.power = 85;
@@ -181,9 +227,96 @@ void parallelpark () {
 	return;
 }
 
+void turn180 (void) {
+	motor1.power = 50;
+	motor2.power = 50;
+	motor1.direction = 1;
+	motor2.direction = 0;
+	wait(8);
+	
+	if(orientation) {
+		orientation=0;
+	} else {
+		orientation=1;
+	}
+	motor1.power = 0;
+	motor2.power = 0;
+	return;
+}
+
+
+int receive_command (void) { // NOT DONE
+	int command;
+	command = rx_byte(MIN);
+	if (command == FLIP || command == CLOSE || command == FAR || command == PARK) {
+		return command;
+	} else {
+		return -1;
+	}
+}
+
+void implement_command (int command) {
+	if (command == FLIP) {
+		turn180();
+	} else if (command == CLOSE) {
+		changeDistance(1);
+	} else if (command == FAR) {
+		changeDistance(0);
+	} else if (command == PARK) {
+		parallelpark();
+	} 
+	return;
+}
+
+void changeDistance(int change){
+	if(change) //1= get closer
+	{
+		if(distance == longDistance)
+			distance = medDistance;
+		else if (distance == medDistance)
+			distance = shortDistance;
+	}
+	else 
+	{
+		if(distance == medDistance)
+			distance = longDistance;
+		if(distance ==shortDistance)
+			distance = medDistance;
+	}
+	
+	return;
+}
+unsigned char rx_byte (int min) {
+	unsigned char j, val;
+	int v;
+	int k=0;
+	while (!(getADC(0)>min));
+	val=0;
+	wait_one_and_half_bit_time();
+	for(j=0; j<3; j++) {
+		v=GetADC(0);
+		val|=(v>min)?(0x01<<j):0x00;
+		wait_bit_time();
+	}
+	wait_one_and_half_bit_time();
+	return val;
+}
+
 void wait(long time){
 	long time1= systime+time*10000;
 	while(!(time1 < systime));
+}
+
+void wait_bit_time (void) {
+	int time_start=systime;
+	while (!(systime==time_start+100));
+	return;
+}
+
+void wait_one_and_half_bit_time(void) {
+	long time_start=systime;
+	while (!(systime==time_start+150));
+	return;
 }
 	
 void SPIWrite(unsigned char value)
@@ -228,6 +361,7 @@ void compareVoltage(unsigned char chan1, unsigned char chan2) {
 	printf("Channel %c = %dV \n\r Channel %c = %dV \n\r Chan %c - %c = %dV",chan1,v1,chan2,v2,chan1,chan2,v1-v2);
 	return;
 }
+
 unsigned char _c51_external_startup(void) {
 	P0M0=0;	P0M1=0;
 	P1M0=0;	P1M1=0;
