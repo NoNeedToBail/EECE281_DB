@@ -293,7 +293,7 @@ unsigned char rx_byte (int min) {
 	while (!(getADC(0)>min));
 	val=0;
 	wait_one_and_half_bit_time();
-	for(j=0; j<3; j++) {
+	for(j=0; j<4; j++) {
 		v=GetADC(0);
 		val|=(v>min)?(0x01<<j):0x00;
 		wait_bit_time();
