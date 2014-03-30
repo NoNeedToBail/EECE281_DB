@@ -36,9 +36,11 @@ int getDistance(int sensor);
 unsigned char rx_byte (int min);
 int receive_command (void);
 void implement_command (int);
+void printCommand(int);
 unsigned int GetADC(unsigned char channel);
 void wait_bit_time (void);
 void wait_one_and_half_bit_time (void);
+int complement (int num);
 
 
 void compareVoltage(unsigned char chan1, unsigned char chan2);
@@ -196,7 +198,7 @@ void printCommand(int command){
 	else if (command == PARK)
 		printf("Received park command \n");
 	else if (command == CLOSE)
-		printf"Received clloser command \n");
+		printf("Received closer command \n");
 	else if (command == FAR)
 		printf("Received farther command \n");
 return;
@@ -248,6 +250,7 @@ void turn180 (void) {
 int receive_command (void) { // NOT DONE
 	int command;
 	command = rx_byte(MIN);
+	command = complement(command);
 	if (command == FLIP || command == CLOSE || command == FAR || command == PARK) {
 		return command;
 	} else {
@@ -290,7 +293,7 @@ unsigned char rx_byte (int min) {
 	unsigned char j, val;
 	int v;
 	int k=0;
-	while (!(getADC(0)>min));
+	while (!(GetADC(0)>min));
 	val=0;
 	wait_one_and_half_bit_time();
 	for(j=0; j<4; j++) {
@@ -317,6 +320,11 @@ void wait_one_and_half_bit_time(void) {
 	long time_start=systime;
 	while (!(systime==time_start+150));
 	return;
+}
+
+
+int complement (int num) {
+	return ~num - 0xF0;
 }
 	
 void SPIWrite(unsigned char value)
