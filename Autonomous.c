@@ -56,7 +56,7 @@ volatile long unsigned systime = 0;
 volatile int distance = 10;
 volatile int totalpower = 50;
 volatile int autonomous = 0;
-motor motor1, motor2;
+motor motorLeft, motorRight;
 int start_receiving=0;
 
 
@@ -112,74 +112,72 @@ void theISR (void) interrupt 1 {
 		}
 		delta = left - right;
 		
-		
-		
 		if (left > distance){
-			motor1.direction = FORWARD;
-			motor2.direction = FORWARD;
-			motor1.power = totalpower + DISTSCALE * delta;
-			motor2.power = totalpower - DISTSCALE * delta;
+			motorLeft.direction = FORWARD;
+			motorRight.direction = FORWARD;
+			motorLeft.power = totalpower + DISTSCALE * delta;
+			motorRight.power = totalpower - DISTSCALE * delta;
 		} else if (left < distance){
-			motor1.direction = REVERSE;
-			motor2.direction = REVERSE;
-			motor1.power = totalpower - DISTSCALE * delta;
-			motor2.power = totalpower + DISTSCALE * delta;
+			motorLeft.direction = REVERSE;
+			motorRight.direction = REVERSE;
+			motorLeft.power = totalpower - DISTSCALE * delta;
+			motorRight.power = totalpower + DISTSCALE * delta;
 		} else if (left == distance){
-			motor1.power = 0;
+			motorLeft.power = 0;
 			if (delta > 0){
-				motor2.direction = REVERSE;
-				motor2.power = DISTSCALE * delta;
+				motorRight.direction = REVERSE;
+				motorRight.power = DISTSCALE * delta;
 			} else if (delta < 0){
-				motor2.direction = FORWARD;
-				motor2.power = - (DISTSCALE * delta);
+				motorRight.direction = FORWARD;
+				motorRight.power = - (DISTSCALE * delta);
 			} else {
-				motor2.power = 0;
+				motorRight.power = 0;
 			}
 		}
 	}
 	
 	
-	if (motor1.power > 100){
-		motor1.power = 100;
+	if (motorLeft.power > 100){
+		motorLeft.power = 100;
 	}
-	if (motor1.power < 0){
-		motor1.power = 0;
+	if (motorLeft.power < 0){
+		motorLeft.power = 0;
 	}
-	if (motor2.power > 100){
-		motor2.power = 100;
+	if (motorRight.power > 100){
+		motorRight.power = 100;
 	}
-	if (motor2.power < 0){
-		motor2.power = 0;
+	if (motorRight.power < 0){
+		motorRight.power = 0;
 	}
 	
 	if (orientation == FORWARD) {
-		if (motor1.direction == FORWARD){
-			M1P = (motor1.power > pwmcount ? 1 : 0);
+		if (motorLeft.direction == FORWARD){
+			M1P = (motorLeft.power > pwmcount ? 1 : 0);
 			M1N = 0;
 		} else {
 			M1P = 0;
-			M1N = (motor1.power > pwmcount ? 1 : 0);
+			M1N = (motorLeft.power > pwmcount ? 1 : 0);
 		}
-		if (motor2.direction == FORWARD){
-			M2P = (motor2.power > pwmcount ? 1 : 0);
+		if (motorRight.direction == FORWARD){
+			M2P = (motorRight.power > pwmcount ? 1 : 0);
 			M2N = 0;
 		} else {
 			M2P = 0;
-			M2N = (motor2.power > pwmcount ? 1 : 0);
+			M2N = (motorRight.power > pwmcount ? 1 : 0);
 		}
 	} else {
-		if (motor1.direction == FORWARD){
+		if (motorLeft.direction == FORWARD){
 			M2P = 0;
-			M2N = (motor1.power > pwmcount ? 1 : 0);
+			M2N = (motorLeft.power > pwmcount ? 1 : 0);
 		} else {
-			M2P = (motor1.power > pwmcount ? 1 : 0);
+			M2P = (motorLeft.power > pwmcount ? 1 : 0);
 			M2N = 0;
 		}
-		if (motor2.direction == FORWARD){
+		if (motorRight.direction == FORWARD){
 			M1P = 0;
-			M1N = (motor2.power > pwmcount ? 1 : 0);
+			M1N = (motorRight.power > pwmcount ? 1 : 0);
 		} else {
-			M1P = (motor2.power > pwmcount ? 1 : 0);
+			M1P = (motorRight.power > pwmcount ? 1 : 0);
 			M1N = 0;
 		}
 	}
@@ -204,36 +202,36 @@ void printCommand(int command){
 return;
 }
 void parallelpark () {
-	motor1.power = 85;
-	motor2.power = 85;
-	motor1.direction = 1;
-	motor2.direction = 1;
+	motorLeft.power = 85;
+	motorRight.power = 85;
+	motorLeft.direction = 1;
+	motorRight.direction = 1;
 	wait(1);
 
-	motor1.power = 50;
-	motor2.power = 0;
-	motor1.direction = 0;
-	motor2.direction = 0;
+	motorLeft.power = 50;
+	motorRight.power = 0;
+	motorLeft.direction = 0;
+	motorRight.direction = 0;
 	wait(1);
 
-	motor1.power = 75;
-	motor2.power = 75;
+	motorLeft.power = 75;
+	motorRight.power = 75;
 	wait(1);
 	
-	motor1.power = 0;
-	motor2.power = 45;
+	motorLeft.power = 0;
+	motorRight.power = 45;
 	wait(1);
 	
-	motor1.power = 0;
-	motor2.power = 0;
+	motorLeft.power = 0;
+	motorRight.power = 0;
 	return;
 }
 
 void turn180 (void) {
-	motor1.power = 50;
-	motor2.power = 50;
-	motor1.direction = 1;
-	motor2.direction = 0;
+	motorLeft.power = 50;
+	motorRight.power = 50;
+	motorLeft.direction = 1;
+	motorRight.direction = 0;
 	wait(8);
 	
 	if(orientation) {
@@ -241,8 +239,8 @@ void turn180 (void) {
 	} else {
 		orientation=1;
 	}
-	motor1.power = 0;
-	motor2.power = 0;
+	motorLeft.power = 0;
+	motorRight.power = 0;
 	return;
 }
 

@@ -77,17 +77,15 @@ void sendMessage (int message) {
 	
 	turnOff();
 	tempTime = time;
-	while(time < tempTime + 30){
-		//printf("Current time: %ld Waiting for: %ld\n", time, tempTime + 30);
-	}
+	while(time < tempTime + 30); //3 "0"s as start bits
 	turnOn();
 	tempTime = time;
-	while(time < tempTime + 10);
+	while(time < tempTime + 10); //1 "1" as start bit
 	for (i = 0; i < 4; i++) {
 		ET0 = message & 1;
 		message >>= 1;
 		tempTime = time;
-		while(time < tempTime + 10);
+		while(time < tempTime + 10); //send each bit for 10ms
 	}
 	turnOn();
 }
@@ -96,20 +94,20 @@ void main (void) {
 	int button = 0;
 	while (1)
 	{
-		printf("Enter button number (1 to 4): ");
-		scanf("%d", &button);
-		printf("\nGot input %d\n", button);
-		if (button == 1){
+		if (BUTTON1 == PUSHED){
+			while(BUTTON1 == PUSHED);
 			sendMessage(FLIP);
-		} else if (button == 2){
+		} else if (BUTTON2 == PUSHED){
+			while(BUTTON2 == PUSHED);
 			sendMessage(CLOSE);
-		} else if (button == 3){
+		} else if (BUTTON3 == PUSHED){
+			while(BUTTON3 == PUSHED);
 			sendMessage(FAR);
-		} else if (button == 4){
+		} else if (BUTTON4 == PUSHED){
+			while(BUTTON4 == PUSHED);
 			sendMessage(PARK);
 		} else {
 			turnOn();
 		}
-		printf("End of while loop, returning to start.");
 	}
 }
