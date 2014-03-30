@@ -36,10 +36,10 @@ int getDistance(int sensor);
 unsigned char rx_byte (int min);
 int receive_command (void);
 void implement_command (int);
-unsigned int GetADC(unsigned char channel);
+void printCommand(int command);
+unsigned int getADC(unsigned char channel);
 void wait_bit_time (void);
 void wait_one_and_half_bit_time (void);
-
 
 void compareVoltage(unsigned char chan1, unsigned char chan2);
 
@@ -88,7 +88,7 @@ void main (void) {
 			zeroCount=0;
 			autonomous=1;
 		}
-		v=GetADC(0);
+		v=getADC(0);
 		if (!(v>MIN)) zeroCount+=1;
 		else zeroCount=0;
 		wait_bit_time();
@@ -188,17 +188,19 @@ int getDistance(int sensor){
 		return 6;
 	}
 }
+
 void printCommand(int command){
 	if(command==FLIP)
 		printf("Recieved flip command \n");
 	else if (command == PARK)
 		printf("Received park command \n");
 	else if (command == CLOSE)
-		printf"Received clloser command \n");
+		printf("Received closer command \n");
 	else if (command == FAR)
 		printf("Received farther command \n");
-return;
+	return;
 }
+
 void parallelpark () {
 	motorLeft.power = 85;
 	motorRight.power = 85;
@@ -284,6 +286,7 @@ void changeDistance(int change){
 	
 	return;
 }
+
 unsigned char rx_byte (int min) {
 	unsigned char j, val;
 	int v;
@@ -292,7 +295,7 @@ unsigned char rx_byte (int min) {
 	val=0;
 	wait_one_and_half_bit_time();
 	for(j=0; j<4; j++) {
-		v=GetADC(0);
+		v=getADC(0);
 		val|=(v>min)?(0x01<<j):0x00;
 		wait_bit_time();
 	}
@@ -325,7 +328,7 @@ void SPIWrite(unsigned char value)
 }
 
 // Read 10 bits from the MCP3004 ADC converter
-unsigned int GetADC(unsigned char channel)
+unsigned int getADC(unsigned char channel)
 {
 	unsigned int adc;
 
@@ -347,9 +350,8 @@ unsigned int GetADC(unsigned char channel)
 	return adc;
 }
 
-float voltage (unsigned char channel)
-{
-	return ( (GetADC(channel)*5)/1023.0 ); // VCC=5V (measured)
+float voltage (unsigned char channel) {
+	return ( (getADC(channel)*5)/1023.0 ); // VCC=5V (measured)
 }
 
 void compareVoltage(unsigned char chan1, unsigned char chan2) {
