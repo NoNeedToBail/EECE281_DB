@@ -84,7 +84,7 @@ void main (void) {
 	int zeroCount=0;
 	int command;
 	int i = 0;
-	ET0 = 0;
+	ET0 = 1;
 	P0_5 = 1;
 	
 	while (1) {
@@ -93,9 +93,9 @@ void main (void) {
 		ET0 = 0;
 		command = receive_command();
 		printCommand(command);
-		//ET0 = 1;
+		ET0 = 1;
 		P0_5 = 1;
-
+		wait_one_and_half_bit_time();
 	}
 }
 
