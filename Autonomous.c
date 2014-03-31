@@ -12,15 +12,14 @@
 
 #define FORWARD 1
 #define REVERSE 0
-#define ERROR 3
-#define DISTSCALE 10
+#define DISTSCALE 50
 #define M1P P0_2
 #define M1N P0_3
 #define M2P P0_0
 #define M2N P0_1
-#define shortDistance 5 
-#define medDistance 5
-#define longDistance 5
+#define shortDistance 1
+#define medDistance 2
+#define longDistance 4
 #define FLIP 0B_0000
 #define CLOSE 0B_0110
 #define FAR 0B_0011
@@ -187,12 +186,8 @@ void theISR (void) interrupt 1 {
 	}
 }
 
-int getDistance(int sensor){//NOT DONE
-	if (sensor == 1){
-		return 5;
-	} else {
-		return 6;
-	}
+int getDistance(int sensor){
+	return voltage(sensor - 1);
 }
 
 void printCommand(int command){
