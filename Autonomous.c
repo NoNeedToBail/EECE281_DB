@@ -28,6 +28,26 @@
 #define MIN 0.75
 #define RATIO 0.16 //ratio of cm/s per power
 
+//         LP51B    MCP3004
+
+//---------------------------
+
+// MISO  -  P1.5  - pin 10
+// SCK   -  P1.6  - pin 11
+// MOSI  -  P1.7  - pin 9
+// CE*   -  P1.4  - pin 8
+// 5V 	 -  VCC   - pins 13, 14
+// 0V    -  GND   - pins 7, 12
+// CH0   -        - pin 1
+// CH1   -        - pin 2
+// CH2   -        - pin 3
+// CH3   -        - pin 4
+
+#define MISO	P1_5
+#define SCK		P1_6
+#define MOSI	P1_7
+#define CE		P1_4
+
 void wait(long);
 void parallelpark();
 void turn180();
@@ -36,15 +56,13 @@ int getDistance(int sensor);
 unsigned char rx_byte ();
 int receive_command (void);
 void implement_command (int);
-void printCommand(int);
+void printCommand(int command);
 unsigned int GetADC(unsigned char channel);
 void wait_bit_time (void);
 void wait_one_and_half_bit_time (void);
 int complement (int num);
-float voltage (unsigned char);
-
-
 void compareVoltage(unsigned char chan1, unsigned char chan2);
+float voltage(unsigned char channel);
 
 typedef struct motor{
 	int power;
@@ -62,23 +80,6 @@ int start_receiving=0;
 volatile int isrwait=0;
 
 
-//         LP51B    MCP3004
-
-//---------------------------
-
-// MISO  -  P1.5  - pin 10
-// SCK   -  P1.6  - pin 11
-// MOSI  -  P1.7  - pin 9
-// CE*   -  P1.4  - pin 8
-// 5V 	 -  VCC   - pins 13, 14
-// 0V    -  GND   - pins 7, 12
-// CH0   -        - pin 1
-// CH1   -        - pin 2
-// CH2   -        - pin 3
-// CH3   -        - pin 4
-
-
-
 void main (void) {
 	int zeroCount=0;
 	int command;
@@ -94,6 +95,7 @@ void main (void) {
 		printCommand(command);
 		//ET0 = 1;
 		P0_5 = 1;
+
 	}
 }
 
@@ -206,6 +208,7 @@ void printCommand(int command){
 		printf("Received %d\n", command);
 	return;
 }
+
 void parallelpark () {
 	motorLeft.power = 85;
 	motorRight.power = 85;
@@ -335,8 +338,7 @@ void SPIWrite(unsigned char value)
 	while((SPSTA & SPIF)!=SPIF); //Wait for transmission to end
 }
 
-unsigned int GetADC(unsigned char channel)
-{
+unsigned int GetADC(unsigned char channel) {
 	unsigned int adc;
 
 	// initialize the SPI port to read the MCP3004 ADC attached to it.
@@ -344,21 +346,20 @@ unsigned int GetADC(unsigned char channel)
 	SPCON=MSTR|CPOL|CPHA|SPR1|SPR0|SSDIS;
 	SPCON|=SPEN; // Enable SPI
 	
-	P1_4=0; // Activate the MCP3004 ADC.
+	CE=0; // Activate the MCP3004 ADC.
 	SPIWrite(channel|0x18);	// Send start bit, single/diff* bit, D2, D1, and D0 bits.
 	for(adc=0; adc<10; adc++); // Wait for S/H to setup
 	SPIWrite(0x55); // Read bits 9 down to 4
 	adc=((SPDAT&0x3f)*0x100);
 	SPIWrite(0x55);// Read bits 3 down to 0
-	P1_4=1; // Deactivate the MCP3004 ADC.
+	CE=1; // Deactivate the MCP3004 ADC.
 	adc+=(SPDAT&0xf0); // SPDR contains the low part of the result. 
 	adc>>=4;
 		
 	return adc;
 }
 
-float voltage (unsigned char channel)
-{
+float voltage (unsigned char channel) {
 	return ( (GetADC(channel)*5)/1023.0 ); // VCC=5V (measured)
 }
 
