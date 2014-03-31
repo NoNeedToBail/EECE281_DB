@@ -220,3 +220,4 @@ lolz.asm
 *.lkr
 *.map
 Transmitter.asm
+command.c

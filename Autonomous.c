@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <at89lp51rd2.h>
-//#include <Commands.h>
  
 #define CLK 22118400L
 #define BAUD 115200L
 #define BRG_VAL (0x100-(CLK/(32L*BAUD)))
 
 //We want timer 0 to interrupt every 100 microseconds ((1/10000Hz)=100 us)
-#define FREQ 10000L
+#define FREQ 1000L
 #define TIMER0_RELOAD_VALUE (65536L-(CLK/(12L*FREQ)))
 
 #define FORWARD 1
@@ -22,18 +21,19 @@
 #define shortDistance 5 
 #define medDistance 5
 #define longDistance 5
-#define FLIP 0B_000
-#define CLOSE 0B_110
-#define FAR 0B_011
-#define PARK 0B_101
-#define MIN 0
+#define FLIP 0B_0000
+#define CLOSE 0B_0110
+#define FAR 0B_0011
+#define PARK 0B_0101
+#define MIN 0.75
+#define RATIO 0.16 //ratio of cm/s per power
 
 void wait(long);
 void parallelpark();
 void turn180();
 void changeDistance(int);
 int getDistance(int sensor);
-unsigned char rx_byte (int min);
+unsigned char rx_byte ();
 int receive_command (void);
 void implement_command (int);
 void printCommand(int);
@@ -41,6 +41,7 @@ unsigned int GetADC(unsigned char channel);
 void wait_bit_time (void);
 void wait_one_and_half_bit_time (void);
 int complement (int num);
+float voltage (unsigned char);
 
 
 void compareVoltage(unsigned char chan1, unsigned char chan2);
@@ -58,6 +59,7 @@ volatile int totalpower = 50;
 volatile int autonomous = 0;
 motor motorLeft, motorRight;
 int start_receiving=0;
+volatile int isrwait=0;
 
 
 //         LP51B    MCP3004
@@ -68,7 +70,7 @@ int start_receiving=0;
 // SCK   -  P1.6  - pin 11
 // MOSI  -  P1.7  - pin 9
 // CE*   -  P1.4  - pin 8
-// 5V  -  VCC   - pins 13, 14
+// 5V 	 -  VCC   - pins 13, 14
 // 0V    -  GND   - pins 7, 12
 // CH0   -        - pin 1
 // CH1   -        - pin 2
@@ -80,29 +82,30 @@ int start_receiving=0;
 void main (void) {
 	int zeroCount=0;
 	int command;
-	int v;
+	int i = 0;
+	ET0 = 0;
+	P0_5 = 1;
+	
 	while (1) {
-		if (zeroCount==2) {
-			autonomous=0;
-			command=receive_command();
-			implement_command(command);
-			printCommand(command);
-			zeroCount=0;
-			autonomous=1;
-		}
-		v=GetADC(0);
-		if (!(v>MIN)) zeroCount+=1;
-		else zeroCount=0;
-		wait_bit_time();
+		while (voltage(0) > MIN);
+		P0_5 = 0;
+		ET0 = 0;
+		command = receive_command();
+		printCommand(command);
+		//ET0 = 1;
+		P0_5 = 1;
 	}
 }
 
+void timeISR (void) interrupt 3 {
+	systime ++;
+}
+
 void theISR (void) interrupt 1 {
-	int delta; //delta = left distance - right distance
+	int delta;
 	int left = getDistance(1);
 	int right = getDistance(2);
 	if(++pwmcount > 99) pwmcount = 0;
-	systime++;
 	
 	if (autonomous){
 		if(orientation == REVERSE){
@@ -135,7 +138,6 @@ void theISR (void) interrupt 1 {
 			}
 		}
 	}
-	
 	
 	if (motorLeft.power > 100){
 		motorLeft.power = 100;
@@ -183,13 +185,14 @@ void theISR (void) interrupt 1 {
 	}
 }
 
-int getDistance(int sensor){
+int getDistance(int sensor){//NOT DONE
 	if (sensor == 1){
 		return 5;
 	} else {
 		return 6;
 	}
 }
+
 void printCommand(int command){
 	if(command==FLIP)
 		printf("Recieved flip command \n");
@@ -199,7 +202,9 @@ void printCommand(int command){
 		printf("Received closer command \n");
 	else if (command == FAR)
 		printf("Received farther command \n");
-return;
+	else
+		printf("Received %d\n", command);
+	return;
 }
 void parallelpark () {
 	motorLeft.power = 85;
@@ -245,15 +250,10 @@ void turn180 (void) {
 }
 
 
-int receive_command (void) { // NOT DONE
+int receive_command (void) {
 	int command;
-	command = rx_byte(MIN);
-	command = complement(command);
-	if (command == FLIP || command == CLOSE || command == FAR || command == PARK) {
-		return command;
-	} else {
-		return -1;
-	}
+	command = rx_byte();
+	return command;
 }
 
 void implement_command (int command) {
@@ -287,39 +287,42 @@ void changeDistance(int change){
 	
 	return;
 }
-unsigned char rx_byte (int min) {
+
+unsigned char rx_byte (void) {
 	unsigned char j, val;
 	int v;
 	int k=0;
-	while (!(GetADC(0)>min));
+	P0_5 = 1;
+	while (voltage(0)<MIN);
+	P0_5 = !P0_5;
 	val=0;
 	wait_one_and_half_bit_time();
 	for(j=0; j<4; j++) {
-		v=GetADC(0);
-		val|=(v>min)?(0x01<<j):0x00;
+		v=voltage(0);
+		P0_5 = !P0_5;
+		val|=(v>MIN)?(0x01<<j):0x00;
 		wait_bit_time();
 	}
-	wait_one_and_half_bit_time();
+	P0_5 = 0;
 	return val;
 }
 
 void wait(long time){
-	long time1= systime+time*10000;
+	long time1= systime+time*1000;
 	while(!(time1 < systime));
 }
 
 void wait_bit_time (void) {
-	int time_start=systime;
-	while (!(systime==time_start+100));
+	long time_start=systime;
+	while (!(systime > time_start+9));
 	return;
 }
 
 void wait_one_and_half_bit_time(void) {
 	long time_start=systime;
-	while (!(systime==time_start+150));
+	while (!(systime > time_start+14));
 	return;
 }
-
 
 int complement (int num) {
 	return ~num - 0xF0;
@@ -332,7 +335,6 @@ void SPIWrite(unsigned char value)
 	while((SPSTA & SPIF)!=SPIF); //Wait for transmission to end
 }
 
-// Read 10 bits from the MCP3004 ADC converter
 unsigned int GetADC(unsigned char channel)
 {
 	unsigned int adc;
@@ -360,14 +362,6 @@ float voltage (unsigned char channel)
 	return ( (GetADC(channel)*5)/1023.0 ); // VCC=5V (measured)
 }
 
-void compareVoltage(unsigned char chan1, unsigned char chan2) {
-	float v1,v2;
-	v1=voltage(chan1);
-	v2=voltage(chan2);
-	printf("Channel %c = %dV \n\r Channel %c = %dV \n\r Chan %c - %c = %dV",chan1,v1,chan2,v2,chan1,chan2,v1-v2);
-	return;
-}
-
 unsigned char _c51_external_startup(void) {
 	P0M0=0;	P0M1=0;
 	P1M0=0;	P1M1=0;
@@ -383,11 +377,16 @@ unsigned char _c51_external_startup(void) {
     BDRCON=BRR|TBCK|RBCK|SPD;
 	
 	TR0=0;
-	TMOD=0x01;
+	TMOD=0x11;
 	TH0=RH0=TIMER0_RELOAD_VALUE/0x100;
 	TL0=RL0=TIMER0_RELOAD_VALUE%0x100;
 	TR0=1;
 	ET0=1;
+	TR1=0;
+	TH1=RH1=TIMER0_RELOAD_VALUE/0x100;
+	TL1=RL1=TIMER0_RELOAD_VALUE%0x100;
+	TR1=1;
+	ET1=1;
 	EA=1;
     return 0;
 }
