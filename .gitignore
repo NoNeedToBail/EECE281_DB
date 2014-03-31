@@ -220,8 +220,5 @@ lolz.asm
 *.lkr
 *.map
 Transmitter.asm
-<<<<<<< HEAD
 command.c
-=======
 Autonomous.asm
->>>>>>> 1b56c90ab19eb7dbc298991e8ca42156e625bf79
