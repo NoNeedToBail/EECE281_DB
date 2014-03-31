@@ -28,6 +28,26 @@
 #define PARK 0B_101
 #define MIN 0
 
+//         LP51B    MCP3004
+
+//---------------------------
+
+// MISO  -  P1.5  - pin 10
+// SCK   -  P1.6  - pin 11
+// MOSI  -  P1.7  - pin 9
+// CE*   -  P1.4  - pin 8
+// 5V 	 -  VCC   - pins 13, 14
+// 0V    -  GND   - pins 7, 12
+// CH0   -        - pin 1
+// CH1   -        - pin 2
+// CH2   -        - pin 3
+// CH3   -        - pin 4
+
+#define MISO	P1_5
+#define SCK		P1_6
+#define MOSI	P1_7
+#define CE		P1_4
+
 void wait(long);
 void parallelpark();
 void turn180();
@@ -41,7 +61,6 @@ unsigned int getADC(unsigned char channel);
 void wait_bit_time (void);
 void wait_one_and_half_bit_time (void);
 int complement (int num);
-
 void compareVoltage(unsigned char chan1, unsigned char chan2);
 
 typedef struct motor{
@@ -58,24 +77,6 @@ volatile int autonomous = 0;
 motor motorLeft, motorRight;
 int start_receiving=0;
 
-
-//         LP51B    MCP3004
-
-//---------------------------
-
-// MISO  -  P1.5  - pin 10
-// SCK   -  P1.6  - pin 11
-// MOSI  -  P1.7  - pin 9
-// CE*   -  P1.4  - pin 8
-// 5V  -  VCC   - pins 13, 14
-// 0V    -  GND   - pins 7, 12
-// CH0   -        - pin 1
-// CH1   -        - pin 2
-// CH2   -        - pin 3
-// CH3   -        - pin 4
-
-
-
 void main (void) {
 	int zeroCount=0;
 	int command;
@@ -90,7 +91,7 @@ void main (void) {
 			autonomous=1;
 		}
 		v=getADC(0);
-		if (!(v>MIN)) zeroCount+=1;
+		if (v <= MIN) zeroCount+=1;
 		else zeroCount=0;
 		wait_bit_time();
 	}
@@ -134,7 +135,6 @@ void theISR (void) interrupt 1 {
 			}
 		}
 	}
-	
 	
 	if (motorLeft.power > 100){
 		motorLeft.power = 100;
@@ -344,13 +344,13 @@ unsigned int getADC(unsigned char channel)
 	SPCON=MSTR|CPOL|CPHA|SPR1|SPR0|SSDIS;
 	SPCON|=SPEN; // Enable SPI
 	
-	P1_4=0; // Activate the MCP3004 ADC.
+	CE=0; // Activate the MCP3004 ADC.
 	SPIWrite(channel|0x18);	// Send start bit, single/diff* bit, D2, D1, and D0 bits.
 	for(adc=0; adc<10; adc++); // Wait for S/H to setup
 	SPIWrite(0x55); // Read bits 9 down to 4
 	adc=((SPDAT&0x3f)*0x100);
 	SPIWrite(0x55);// Read bits 3 down to 0
-	P1_4=1; // Deactivate the MCP3004 ADC.
+	CE=1; // Deactivate the MCP3004 ADC.
 	adc+=(SPDAT&0xf0); // SPDR contains the low part of the result. 
 	adc>>=4;
 		
