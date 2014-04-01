@@ -222,3 +222,5 @@ lolz.asm
 Transmitter.asm
 command.c
 Autonomous.asm
+Autonomousv2.asm
+Autonomousv2.c

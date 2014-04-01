@@ -7,8 +7,10 @@
 #define BRG_VAL (0x100-(CLK/(32L*BAUD)))
 
 //We want timer 0 to interrupt every 100 microseconds ((1/10000Hz)=100 us)
-#define FREQ 1000L
+#define FREQ 10000L
 #define TIMER0_RELOAD_VALUE (65536L-(CLK/(12L*FREQ)))
+#define FREQ1 1000L
+#define TIMER1_RELOAD_VALUE (65536L-(CLK/(12L*FREQ1)))
 
 #define FORWARD 1
 #define REVERSE 0
@@ -19,12 +21,14 @@
 #define M2N P0_1
 #define shortDistance 1
 #define medDistance 2
-#define longDistance 4
+#define longDistance 10
 #define FLIP 0B_0000
 #define CLOSE 0B_0110
 #define FAR 0B_0011
 #define PARK 0B_0101
 #define MIN 0.75
+#define LEFTSCALINGFACTOR 2
+#define RIGHTSCALINGFACTOR 4
 #define RATIO 0.16 //ratio of cm/s per power
 
 //         LP51B    MCP3004
@@ -51,7 +55,7 @@ void wait(long);
 void parallelpark();
 void turn180();
 void changeDistance(int);
-int getDistance(int sensor);
+float getDistance(int sensor);
 unsigned char rx_byte ();
 int receive_command (void);
 void implement_command (int);
@@ -68,23 +72,22 @@ typedef struct motor{
 	int direction;
 }motor;
 
-volatile int orientation = REVERSE;
+volatile int orientation = FORWARD;
 volatile unsigned pwmcount;
 volatile long unsigned systime = 0;
-volatile int distance = 10;
-volatile int totalpower = 50;
+volatile int distance;
+//volatile int totalpower = 50;
 volatile int autonomous = 0;
 motor motorLeft, motorRight;
-int start_receiving=0;
-volatile int isrwait=0;
+
 
 
 void main (void) {
-	int zeroCount=0;
 	int command;
-	int i = 0;
+	autonomous = 1;
 	ET0 = 1;
 	P0_5 = 1;
+	distance = medDistance;
 	
 	while (1) {
 		while (voltage(0) > MIN);
@@ -105,9 +108,10 @@ void timeISR (void) interrupt 3 {
 
 void theISR (void) interrupt 1 {
 	int delta;
-	int left = getDistance(1);
-	int right = getDistance(2);
-	if(++pwmcount > 99) pwmcount = 0;
+	float left = getDistance(1);
+	float right = getDistance(2);
+	printf("%f %f %d\n", left, right, systime);
+	if((pwmcount+=1) > 99) pwmcount = 0;
 	
 	if (autonomous){
 		if(orientation == REVERSE){
@@ -115,7 +119,23 @@ void theISR (void) interrupt 1 {
 			left = right;
 			right = temp;
 		}
-		delta = left - right;
+		
+		if (left < distance) {
+			motorLeft.direction = FORWARD;
+			motorLeft.power = 20;
+		} else {
+			motorLeft.direction = REVERSE;
+			motorLeft.power = 20;
+		}
+		
+		if (right < distance) {
+			motorRight.direction = FORWARD;
+			motorRight.power = 20;
+		} else {
+			motorRight.direction = REVERSE;
+			motorRight.power = 20;
+		}
+		/*delta = left - right;
 		
 		if (left > distance){
 			motorLeft.direction = FORWARD;
@@ -138,7 +158,7 @@ void theISR (void) interrupt 1 {
 			} else {
 				motorRight.power = 0;
 			}
-		}
+		}*/
 	}
 	
 	if (motorLeft.power > 100){
@@ -187,8 +207,14 @@ void theISR (void) interrupt 1 {
 	}
 }
 
-int getDistance(int sensor){
-	return voltage(sensor - 1);
+float getDistance(int sensor){
+	float v;
+	v = voltage(sensor - 1);
+	if (sensor == 1) { //left wheel
+		return LEFTSCALINGFACTOR/v;
+	} else {
+		return RIGHTSCALINGFACTOR/v;
+	}
 }
 
 void printCommand(int command){
@@ -236,7 +262,7 @@ void turn180 (void) {
 	motorRight.power = 50;
 	motorLeft.direction = 1;
 	motorRight.direction = 0;
-	wait(8);
+	wait(3);
 	
 	if(orientation) {
 		orientation=0;
@@ -257,9 +283,9 @@ int receive_command (void) {
 
 void implement_command (int command) {
 	if (command == FLIP) {
-		ET0=1;
+		autonomous = 0;
 		turn180();
-		ET0=0;
+		autonomous = 1;
 	} else if (command == CLOSE) {
 		changeDistance(1);
 	} else if (command == FAR) {
@@ -285,8 +311,6 @@ void changeDistance(int change){
 		if(distance ==shortDistance)
 			distance = medDistance;
 	}
-	
-	return;
 }
 
 unsigned char rx_byte (void) {
@@ -358,7 +382,7 @@ unsigned int GetADC(unsigned char channel) {
 }
 
 float voltage (unsigned char channel) {
-	return ( (GetADC(channel)*5)/1023.0 ); // VCC=5V (measured)
+	return ((GetADC(channel)*5)/1023.0); // VCC=5V (measured)
 }
 
 unsigned char _c51_external_startup(void) {
@@ -382,8 +406,8 @@ unsigned char _c51_external_startup(void) {
 	TR0=1;
 	ET0=1;
 	TR1=0;
-	TH1=RH1=TIMER0_RELOAD_VALUE/0x100;
-	TL1=RL1=TIMER0_RELOAD_VALUE%0x100;
+	TH1=RH1=TIMER1_RELOAD_VALUE/0x100;
+	TL1=RL1=TIMER1_RELOAD_VALUE%0x100;
 	TR1=1;
 	ET1=1;
 	EA=1;
