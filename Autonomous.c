@@ -91,6 +91,7 @@ void main (void) {
 		P0_5 = 0;
 		ET0 = 0;
 		command = receive_command();
+		implement_command(command);
 		printCommand(command);
 		ET0 = 1;
 		P0_5 = 1;
@@ -256,7 +257,9 @@ int receive_command (void) {
 
 void implement_command (int command) {
 	if (command == FLIP) {
+		ET0=1;
 		turn180();
+		ET0=0;
 	} else if (command == CLOSE) {
 		changeDistance(1);
 	} else if (command == FAR) {
