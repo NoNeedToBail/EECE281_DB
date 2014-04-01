@@ -7,7 +7,7 @@
 #define BRG_VAL (0x100-(CLK/(32L*BAUD)))
 
 //We want timer 0 to interrupt every 100 microseconds ((1/10000Hz)=100 us)
-#define FREQ 10000L
+#define FREQ 2000L
 #define TIMER0_RELOAD_VALUE (65536L-(CLK/(12L*FREQ)))
 #define FREQ1 1000L
 #define TIMER1_RELOAD_VALUE (65536L-(CLK/(12L*FREQ1)))
@@ -26,9 +26,9 @@
 #define CLOSE 0B_0110
 #define FAR 0B_0011
 #define PARK 0B_0101
-#define MIN 0.5
-#define LEFTSCALINGFACTOR 1
-#define RIGHTSCALINGFACTOR 1
+#define MIN 50
+#define LEFTSCALINGFACTOR 1000
+#define RIGHTSCALINGFACTOR 1000
 #define RATIO 0.16 //ratio of cm/s per power
 
 //         LP51B    MCP3004
@@ -55,24 +55,26 @@ void wait(long);
 void parallelpark();
 void turn180();
 void changeDistance(int);
-float getDistance(int sensor);
+
+int voltage(unsigned char channel);
+int getDistance(int sensor);
+unsigned int GetADC(unsigned char channel);
+
 unsigned char rx_byte ();
 int receive_command (void);
 void implement_command (int);
 void printCommand(int command);
-unsigned int GetADC(unsigned char channel);
+
 void wait_bit_time (void);
 void wait_one_and_half_bit_time (void);
-int complement (int num);
-void compareVoltage(unsigned char chan1, unsigned char chan2);
-float voltage(unsigned char channel);
+
 
 typedef struct motor{
 	int power;
 	int direction;
 }motor;
 
-volatile unsigned pwmcount;
+volatile unsigned int pwmcount;
 volatile long unsigned systime = 0;
 int distance;
 int totalpower = 50;
@@ -80,106 +82,69 @@ int autonomous = 0;
 int orientation = FORWARD;
 motor motorLeft, motorRight;
 
-
-
 void main (void) {
-	int command;
+	int command, delta, left, right;
 	autonomous = 1;
-	ET0 = 0;
-	P0_5 = 1;
+	ET0 = 1;
 	distance = medDistance;
 	
 	while (1) {
-		while (voltage(0) > MIN);
-		P0_5 = 0;
-		ET0 = 0;
-		printf("Command receival\n");
-		command = receive_command();
-		printCommand(command);
-		implement_command(command);
-		//ET0 = 1;
-		P0_5 = 1;
-		wait_one_and_half_bit_time();
+		P0_5 = !P0_5;
+		if (voltage(0) > MIN){
+			left = getDistance(1);
+			right = getDistance(2);
+			
+			if (autonomous){
+				delta = left - right;
+				
+				if (left > distance){
+					motorLeft.direction = FORWARD;
+					motorRight.direction = FORWARD;
+					motorLeft.power = totalpower + DISTSCALE * delta;
+					motorRight.power = totalpower - DISTSCALE * delta;
+				} else if (left < distance){
+					motorLeft.direction = REVERSE;
+					motorRight.direction = REVERSE;
+					motorLeft.power = totalpower - DISTSCALE * delta;
+					motorRight.power = totalpower + DISTSCALE * delta;
+				}
+			}
+		} else {
+			ET0 = 0;
+			command = receive_command();
+			//printCommand(command);
+			implement_command(command);
+			ET0 = 1;
+			wait_one_and_half_bit_time();
+		}
 	}
 } 
 
 void timeISR (void) interrupt 3 {
-	systime ++;
+	systime++;
 }
 
-void theISR (void) interrupt 1 {
-	int delta;
-	float left = getDistance(1);
-	float right = getDistance(2);
-	//printf("%f %f %lu\n", left, right, systime);
-	if((pwmcount+=1) > 99) pwmcount = 0;
-	
-	if (autonomous){
-		delta = left - right;
-		
-		if (left > distance){
-			motorLeft.direction = FORWARD;
-			motorRight.direction = FORWARD;
-			motorLeft.power = totalpower + DISTSCALE * delta;
-			motorRight.power = totalpower - DISTSCALE * delta;
-		} else if (left < distance){
-			motorLeft.direction = REVERSE;
-			motorRight.direction = REVERSE;
-			motorLeft.power = totalpower - DISTSCALE * delta;
-			motorRight.power = totalpower + DISTSCALE * delta;
-		}
-	}
-	
-	if (motorLeft.power > 100){
-		motorLeft.power = 100;
-	}
-	if (motorLeft.power < 0){
-		motorLeft.power = 0;
-	}
-	if (motorRight.power > 100){
-		motorRight.power = 100;
-	}
-	if (motorRight.power < 0){
-		motorRight.power = 0;
-	}
+void motorISR (void) interrupt 1 { 
+	if((pwmcount+=5) > 99) pwmcount = 0;
 	
 	if (orientation == FORWARD) {
-		if (motorLeft.direction == FORWARD){
-			M1P = (motorLeft.power > pwmcount ? 1 : 0);
-			M1N = 0;
-		} else {
-			M1P = 0;
-			M1N = (motorLeft.power > pwmcount ? 1 : 0);
-		}
-		if (motorRight.direction == FORWARD){
-			M2P = (motorRight.power > pwmcount ? 1 : 0);
-			M2N = 0;
-		} else {
-			M2P = 0;
-			M2N = (motorRight.power > pwmcount ? 1 : 0);
-		}
+		M1P = (motorLeft.power > pwmcount ? 1 : 0) * motorLeft.direction;
+		M1N = (motorLeft.power > pwmcount ? 1 : 0) * !motorLeft.direction;
+		
+		M2P = (motorRight.power > pwmcount ? 1 : 0) * motorRight.direction;
+		M2N = (motorRight.power > pwmcount ? 1 : 0) * !motorRight.direction;
 	} else {
-		if (motorLeft.direction == FORWARD){
-			M2P = 0;
-			M2N = (motorLeft.power > pwmcount ? 1 : 0);
-		} else {
-			M2P = (motorLeft.power > pwmcount ? 1 : 0);
-			M2N = 0;
-		}
-		if (motorRight.direction == FORWARD){
-			M1P = 0;
-			M1N = (motorRight.power > pwmcount ? 1 : 0);
-		} else {
-			M1P = (motorRight.power > pwmcount ? 1 : 0);
-			M1N = 0;
-		}
+		M2P = (motorLeft.power > pwmcount ? 1 : 0) * !motorLeft.direction;
+		M2N = (motorLeft.power > pwmcount ? 1 : 0) * motorLeft.direction;
+		
+		M1P = (motorRight.power > pwmcount ? 1 : 0) * !motorRight.direction;
+		M1N = (motorRight.power > pwmcount ? 1 : 0) * motorRight.direction;
 	}
 }
 
-float getDistance(int sensor){
-	float v;
+int getDistance(int sensor){
+	int v;
 	v = voltage(sensor - 1);
-	if (v<0.001) v=0.001;
 	if (sensor == 1) { //left wheel
 		return LEFTSCALINGFACTOR/v;
 	} else {
@@ -286,18 +251,14 @@ unsigned char rx_byte (void) {
 	unsigned char j, val;
 	int v;
 	int k=0;
-	P0_5 = 1;
 	while (voltage(0)<MIN);
-	P0_5 = !P0_5;
 	val=0;
 	wait_one_and_half_bit_time();
 	for(j=0; j<4; j++) {
 		v=voltage(0);
-		P0_5 = !P0_5;
 		val|=(v>MIN)?(0x01<<j):0x00;
 		wait_bit_time();
 	}
-	P0_5 = 0;
 	return val;
 }
 
@@ -316,10 +277,6 @@ void wait_one_and_half_bit_time(void) {
 	long time_start=systime;
 	while (!(systime > time_start+14));
 	return;
-}
-
-int complement (int num) {
-	return ~num - 0xF0;
 }
 	
 void SPIWrite(unsigned char value)
@@ -350,8 +307,8 @@ unsigned int GetADC(unsigned char channel) {
 	return adc;
 }
 
-float voltage (unsigned char channel) {
-	return ((GetADC(channel)*5.81)/1023.0); // VCC=5.81V (measured)
+int voltage (unsigned char channel) {
+	return ((GetADC(channel)*5.81)/1023.0) * 100; // VCC=5.81V (measured)
 }
 
 unsigned char _c51_external_startup(void) {
