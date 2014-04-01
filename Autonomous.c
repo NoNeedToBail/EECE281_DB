@@ -26,7 +26,7 @@
 #define CLOSE 0B_0110
 #define FAR 0B_0011
 #define PARK 0B_0101
-#define MIN 50
+#define MIN 1
 #define LEFTSCALINGFACTOR 1000
 #define RIGHTSCALINGFACTOR 1000
 #define RATIO 0.16 //ratio of cm/s per power
@@ -49,7 +49,7 @@
 #define MISO	P1_5
 #define SCK		P1_6
 #define MOSI	P1_7
-#define CE		P1_3
+#define CE		P1_4
 
 void wait(long);
 void parallelpark();
@@ -68,7 +68,6 @@ void printCommand(int command);
 void wait_bit_time (void);
 void wait_one_and_half_bit_time (void);
 
-
 typedef struct motor{
 	int power;
 	int direction;
@@ -83,16 +82,23 @@ int orientation = FORWARD;
 motor motorLeft, motorRight;
 
 void main (void) {
-	int command, delta, left, right;
+	long command, delta, left, right;
 	autonomous = 1;
 	ET0 = 1;
 	distance = medDistance;
 	
 	while (1) {
 		P0_5 = !P0_5;
-		if (voltage(0) > MIN){
-			left = getDistance(1);
-			right = getDistance(2);
+		//if (voltage(0) > MIN){
+			left = voltage(0);
+			right = voltage(1);
+			printf("%ld\t%ld\n", left, right);
+			
+			if (orientation == REVERSE){
+				long temp = left;
+				left = right;
+				right = temp;
+			}
 			
 			if (autonomous){
 				delta = left - right;
@@ -109,14 +115,14 @@ void main (void) {
 					motorRight.power = totalpower + DISTSCALE * delta;
 				}
 			}
-		} else {
+		/*} else {
 			ET0 = 0;
 			command = receive_command();
-			//printCommand(command);
+			printCommand(command);
 			implement_command(command);
 			ET0 = 1;
 			wait_one_and_half_bit_time();
-		}
+		}*/
 	}
 } 
 
@@ -308,7 +314,7 @@ unsigned int GetADC(unsigned char channel) {
 }
 
 int voltage (unsigned char channel) {
-	return ((GetADC(channel)*5.81)/1023.0) * 100; // VCC=5.81V (measured)
+	return ((GetADC(channel)*5.81)/1023.0) * 1000; // VCC=5.81V (measured)
 }
 
 unsigned char _c51_external_startup(void) {
