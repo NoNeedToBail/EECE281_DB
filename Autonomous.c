@@ -19,14 +19,15 @@
 #define M1N P0_3
 #define M2P P0_0
 #define M2N P0_1
-#define shortDistance 1
-#define medDistance 2
-#define longDistance 10
+#define SHORT 100
+#define MED 50
+#define LONG 20
+#define ERROR 20
 #define FLIP 0B_0000
 #define CLOSE 0B_0110
 #define FAR 0B_0011
 #define PARK 0B_0101
-#define MIN 1
+#define MIN 10
 #define LEFTSCALINGFACTOR 1000
 #define RIGHTSCALINGFACTOR 1000
 #define RATIO 0.16 //ratio of cm/s per power
@@ -85,14 +86,13 @@ void main (void) {
 	long command, delta, left, right;
 	autonomous = 1;
 	ET0 = 1;
-	distance = medDistance;
+	distance = MED;
 	
 	while (1) {
-		P0_5 = !P0_5;
-		//if (voltage(0) > MIN){
+		right = voltage(1);
+		if (right > MIN){
 			left = voltage(0);
-			right = voltage(1);
-			printf("%ld\t%ld\n", left, right);
+			//printf("%ld\t%ld\n", left, right);
 			
 			if (orientation == REVERSE){
 				long temp = left;
@@ -103,26 +103,29 @@ void main (void) {
 			if (autonomous){
 				delta = left - right;
 				
-				if (left > distance){
+				if (left > distance + ERROR){
 					motorLeft.direction = FORWARD;
 					motorRight.direction = FORWARD;
 					motorLeft.power = totalpower + DISTSCALE * delta;
 					motorRight.power = totalpower - DISTSCALE * delta;
-				} else if (left < distance){
+				} else if (left < distance - ERROR){
 					motorLeft.direction = REVERSE;
 					motorRight.direction = REVERSE;
 					motorLeft.power = totalpower - DISTSCALE * delta;
 					motorRight.power = totalpower + DISTSCALE * delta;
+				} else {
+					motorLeft.power = 0;
+					motorRight.power = 0;
 				}
 			}
-		/*} else {
+		} else {
 			ET0 = 0;
 			command = receive_command();
 			printCommand(command);
 			implement_command(command);
 			ET0 = 1;
 			wait_one_and_half_bit_time();
-		}*/
+		}
 	}
 } 
 
@@ -231,7 +234,9 @@ void implement_command (int command) {
 	} else if (command == FAR) {
 		changeDistance(0);
 	} else if (command == PARK) {
+		autonomous = 0;
 		parallelpark();
+		autonomous = 1;
 	} 
 	return;
 }
@@ -239,17 +244,17 @@ void implement_command (int command) {
 void changeDistance(int change){
 	if(change) //1= get closer
 	{
-		if(distance == longDistance)
-			distance = medDistance;
-		else if (distance == medDistance)
-			distance = shortDistance;
+		if(distance == LONG)
+			distance = MED;
+		else if (distance == MED)
+			distance = SHORT;
 	}
 	else 
 	{
-		if(distance == medDistance)
-			distance = longDistance;
-		if(distance ==shortDistance)
-			distance = medDistance;
+		if(distance == MED)
+			distance = LONG;
+		if(distance == SHORT)
+			distance = MED;
 	}
 }
 
