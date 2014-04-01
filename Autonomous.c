@@ -26,9 +26,9 @@
 #define CLOSE 0B_0110
 #define FAR 0B_0011
 #define PARK 0B_0101
-#define MIN 0.75
-#define LEFTSCALINGFACTOR 2
-#define RIGHTSCALINGFACTOR 4
+#define MIN 0.5
+#define LEFTSCALINGFACTOR 1
+#define RIGHTSCALINGFACTOR 1
 #define RATIO 0.16 //ratio of cm/s per power
 
 //         LP51B    MCP3004
@@ -49,7 +49,7 @@
 #define MISO	P1_5
 #define SCK		P1_6
 #define MOSI	P1_7
-#define CE		P1_4
+#define CE		P1_3
 
 void wait(long);
 void parallelpark();
@@ -72,12 +72,12 @@ typedef struct motor{
 	int direction;
 }motor;
 
-volatile int orientation = FORWARD;
 volatile unsigned pwmcount;
 volatile long unsigned systime = 0;
-volatile int distance;
-//volatile int totalpower = 50;
-volatile int autonomous = 0;
+int distance;
+int totalpower = 50;
+int autonomous = 0;
+int orientation = FORWARD;
 motor motorLeft, motorRight;
 
 
@@ -85,7 +85,7 @@ motor motorLeft, motorRight;
 void main (void) {
 	int command;
 	autonomous = 1;
-	ET0 = 1;
+	ET0 = 0;
 	P0_5 = 1;
 	distance = medDistance;
 	
@@ -93,14 +93,15 @@ void main (void) {
 		while (voltage(0) > MIN);
 		P0_5 = 0;
 		ET0 = 0;
+		printf("Command receival\n");
 		command = receive_command();
-		implement_command(command);
 		printCommand(command);
-		ET0 = 1;
+		implement_command(command);
+		//ET0 = 1;
 		P0_5 = 1;
 		wait_one_and_half_bit_time();
 	}
-}
+} 
 
 void timeISR (void) interrupt 3 {
 	systime ++;
@@ -110,32 +111,11 @@ void theISR (void) interrupt 1 {
 	int delta;
 	float left = getDistance(1);
 	float right = getDistance(2);
-	printf("%f %f %d\n", left, right, systime);
+	//printf("%f %f %lu\n", left, right, systime);
 	if((pwmcount+=1) > 99) pwmcount = 0;
 	
 	if (autonomous){
-		if(orientation == REVERSE){
-			int temp = left;
-			left = right;
-			right = temp;
-		}
-		
-		if (left < distance) {
-			motorLeft.direction = FORWARD;
-			motorLeft.power = 20;
-		} else {
-			motorLeft.direction = REVERSE;
-			motorLeft.power = 20;
-		}
-		
-		if (right < distance) {
-			motorRight.direction = FORWARD;
-			motorRight.power = 20;
-		} else {
-			motorRight.direction = REVERSE;
-			motorRight.power = 20;
-		}
-		/*delta = left - right;
+		delta = left - right;
 		
 		if (left > distance){
 			motorLeft.direction = FORWARD;
@@ -147,18 +127,7 @@ void theISR (void) interrupt 1 {
 			motorRight.direction = REVERSE;
 			motorLeft.power = totalpower - DISTSCALE * delta;
 			motorRight.power = totalpower + DISTSCALE * delta;
-		} else if (left == distance){
-			motorLeft.power = 0;
-			if (delta > 0){
-				motorRight.direction = REVERSE;
-				motorRight.power = DISTSCALE * delta;
-			} else if (delta < 0){
-				motorRight.direction = FORWARD;
-				motorRight.power = - (DISTSCALE * delta);
-			} else {
-				motorRight.power = 0;
-			}
-		}*/
+		}
 	}
 	
 	if (motorLeft.power > 100){
@@ -210,6 +179,7 @@ void theISR (void) interrupt 1 {
 float getDistance(int sensor){
 	float v;
 	v = voltage(sensor - 1);
+	if (v<0.001) v=0.001;
 	if (sensor == 1) { //left wheel
 		return LEFTSCALINGFACTOR/v;
 	} else {
@@ -273,7 +243,6 @@ void turn180 (void) {
 	motorRight.power = 0;
 	return;
 }
-
 
 int receive_command (void) {
 	int command;
@@ -382,7 +351,7 @@ unsigned int GetADC(unsigned char channel) {
 }
 
 float voltage (unsigned char channel) {
-	return ((GetADC(channel)*5)/1023.0); // VCC=5V (measured)
+	return ((GetADC(channel)*5.81)/1023.0); // VCC=5.81V (measured)
 }
 
 unsigned char _c51_external_startup(void) {
