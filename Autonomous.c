@@ -19,17 +19,17 @@
 #define M1N P0_3
 #define M2P P0_0
 #define M2N P0_1
-#define SHORT 100
-#define MED 50
-#define LONG 20
-#define ERROR 20
+#define SHORT 600
+#define MED 1500
+#define LONG 2500
+#define ERROR 1.1
 #define FLIP 0B_0000
 #define CLOSE 0B_0110
 #define FAR 0B_0011
 #define PARK 0B_0101
-#define MIN 10
-#define LEFTSCALINGFACTOR 1000
-#define RIGHTSCALINGFACTOR 1000
+#define MIN 200
+#define LEFTSCALINGFACTOR 1
+#define RIGHTSCALINGFACTOR 1
 #define RATIO 0.16 //ratio of cm/s per power
 
 //         LP51B    MCP3004
@@ -52,7 +52,7 @@
 #define MOSI	P1_7
 #define CE		P1_4
 
-void wait(long);
+void waitms(long);
 void parallelpark();
 void turn180();
 void changeDistance(int);
@@ -77,6 +77,7 @@ typedef struct motor{
 volatile unsigned int pwmcount;
 volatile long unsigned systime = 0;
 int distance;
+long travelled = 0;
 int totalpower = 50;
 int autonomous = 0;
 int orientation = FORWARD;
@@ -84,14 +85,15 @@ motor motorLeft, motorRight;
 
 void main (void) {
 	long command, delta, left, right;
-	autonomous = 1;
 	ET0 = 1;
 	distance = MED;
+	P0_5=1;
 	
 	while (1) {
-		right = voltage(1);
-		if (right > MIN){
-			left = voltage(0);
+		right = getDistance(2);
+		printf("left mV=%d right mV=%d dist L = %5d dist R = %5d\n",voltage(0),voltage(1),getDistance(1),getDistance(2));
+	//	if (right > MIN){
+			left = getDistance(1);
 			//printf("%ld\t%ld\n", left, right);
 			
 			if (orientation == REVERSE){
@@ -103,12 +105,12 @@ void main (void) {
 			if (autonomous){
 				delta = left - right;
 				
-				if (left > distance + ERROR){
+				if (left > distance * ERROR){
 					motorLeft.direction = FORWARD;
 					motorRight.direction = FORWARD;
 					motorLeft.power = totalpower + DISTSCALE * delta;
 					motorRight.power = totalpower - DISTSCALE * delta;
-				} else if (left < distance - ERROR){
+				} else if (left < distance / ERROR){
 					motorLeft.direction = REVERSE;
 					motorRight.direction = REVERSE;
 					motorLeft.power = totalpower - DISTSCALE * delta;
@@ -118,19 +120,20 @@ void main (void) {
 					motorRight.power = 0;
 				}
 			}
-		} else {
-			ET0 = 0;
+	/*	} else {
 			command = receive_command();
 			printCommand(command);
 			implement_command(command);
-			ET0 = 1;
-			wait_one_and_half_bit_time();
-		}
+			autonomous=0;
+			//wait_one_and_half_bit_time();
+			waitms(200); //just so we don't receive commands back to back
+		}*/
 	}
 } 
 
 void timeISR (void) interrupt 3 {
 	systime++;
+	travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
 }
 
 void motorISR (void) interrupt 1 { 
@@ -152,12 +155,12 @@ void motorISR (void) interrupt 1 {
 }
 
 int getDistance(int sensor){
-	int v;
+	long v;
 	v = voltage(sensor - 1);
 	if (sensor == 1) { //left wheel
-		return LEFTSCALINGFACTOR/v;
+		return LEFTSCALINGFACTOR*(3000-v);
 	} else {
-		return RIGHTSCALINGFACTOR/v;
+		return RIGHTSCALINGFACTOR*(3000-v);
 	}
 }
 
@@ -178,23 +181,23 @@ void printCommand(int command){
 void parallelpark () {
 	motorLeft.power = 85;
 	motorRight.power = 85;
-	motorLeft.direction = 1;
-	motorRight.direction = 1;
-	wait(1);
-
+	motorLeft.direction = FORWARD;
+	motorRight.direction = FORWARD;
+	waitms(1100);
+	
 	motorLeft.power = 50;
 	motorRight.power = 0;
-	motorLeft.direction = 0;
-	motorRight.direction = 0;
-	wait(1);
-
+	motorLeft.direction = REVERSE;
+	motorRight.direction = REVERSE;
+	waitms(1000);
+	
 	motorLeft.power = 75;
 	motorRight.power = 75;
-	wait(1);
+	waitms(900);
 	
 	motorLeft.power = 0;
 	motorRight.power = 45;
-	wait(1);
+	waitms(1035);
 	
 	motorLeft.power = 0;
 	motorRight.power = 0;
@@ -204,14 +207,14 @@ void parallelpark () {
 void turn180 (void) {
 	motorLeft.power = 50;
 	motorRight.power = 50;
-	motorLeft.direction = 1;
-	motorRight.direction = 0;
-	wait(3);
+	motorLeft.direction = FORWARD;
+	motorRight.direction = REVERSE;
+	waitms(2650);
 	
-	if(orientation) {
-		orientation=0;
+	if(orientation==FORWARD) {
+		orientation=REVERSE;
 	} else {
-		orientation=1;
+		orientation=FORWARD;
 	}
 	motorLeft.power = 0;
 	motorRight.power = 0;
@@ -263,18 +266,21 @@ unsigned char rx_byte (void) {
 	int v;
 	int k=0;
 	while (voltage(0)<MIN);
+	P0_5=!P0_5;
 	val=0;
 	wait_one_and_half_bit_time();
 	for(j=0; j<4; j++) {
 		v=voltage(0);
 		val|=(v>MIN)?(0x01<<j):0x00;
+		P0_5=!P0_5;
 		wait_bit_time();
 	}
+	P0_5=1;
 	return val;
 }
 
-void wait(long time){
-	long time1= systime+time*1000;
+void waitms(long time){
+	long time1= systime+time;
 	while(!(time1 < systime));
 }
 
