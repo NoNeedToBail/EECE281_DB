@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <at89lp51rd2.h>
+#include <8051.h>
+
+#define RS	P3_5
+#define RW	P3_7
+#define EN	P3_6
  
 #define CLK 22118400L
 #define BAUD 115200L
@@ -31,6 +36,11 @@
 #define LEFTSCALINGFACTOR 1
 #define RIGHTSCALINGFACTOR 1
 #define RATIO 0.16 //ratio of cm/s per power
+
+//	LCD
+#define CLEAR 0x01
+#define FIRSTLINE 0x80
+#define SECONDLINE 0xC0
 
 //         LP51B    MCP3004
 
@@ -69,6 +79,11 @@ void printCommand(int command);
 void wait_bit_time (void);
 void wait_one_and_half_bit_time (void);
 
+void lcdinit(void);
+void display(unsigned char value);
+void lcdcmd(unsigned char value);
+void delay(unsigned int time);
+
 typedef struct motor{
 	int power;
 	int direction;
@@ -85,6 +100,10 @@ motor motorLeft, motorRight;
 
 void main (void) {
 	long command, delta, left, right;
+	int k=0;
+	char *u = malloc(20);
+	
+	lcdinit();
 	ET0 = 1;
 	distance = MED;
 	P0_5=1;
@@ -94,7 +113,6 @@ void main (void) {
 		printf("left mV=%d right mV=%d dist L = %5d dist R = %5d\n",voltage(0),voltage(1),getDistance(1),getDistance(2));
 	//	if (right > MIN){
 			left = getDistance(1);
-			//printf("%ld\t%ld\n", left, right);
 			
 			if (orientation == REVERSE){
 				long temp = left;
@@ -124,16 +142,40 @@ void main (void) {
 			command = receive_command();
 			printCommand(command);
 			implement_command(command);
-			autonomous=0;
 			//wait_one_and_half_bit_time();
 			waitms(200); //just so we don't receive commands back to back
+		}*/
+		
+		/*if (systime % 1000 == 0){
+			sprintf(u, "Distance: %ldcm", travelled);
+			lcdcmd(CLEAR);          
+			lcdcmd(FIRSTLINE);
+			k = 0;
+			while(u[k]!='\0' && k < 15)
+			{
+				display(u[k]);
+				k++;
+			}
+		}
+		if (systime % 1000 == 500){
+			sprintf(u, "Speed: %dcm/s", (motorLeft.power + motorRight.power) / 2);
+			lcdcmd(CLEAR);          
+			lcdcmd(SECONDLINE);
+			k = 0;
+			while(u[k]!='\0' && k < 15)
+			{
+				display(u[k]);
+				k++;
+			}
 		}*/
 	}
 } 
 
 void timeISR (void) interrupt 3 {
 	systime++;
-	travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
+	if (systime % 1000 == 0){
+		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
+	}
 }
 
 void motorISR (void) interrupt 1 { 
@@ -328,6 +370,43 @@ int voltage (unsigned char channel) {
 	return ((GetADC(channel)*5.81)/1023.0) * 1000; // VCC=5.81V (measured)
 }
 
+void delay(unsigned int time)  //Time delay function
+{
+	unsigned int i,j;
+	for(i=0;i<time;i++)
+  		for(j=0;j<5;j++);
+}
+             //Function for sending values to the command register of LCD
+void lcdcmd(unsigned char value)  
+{
+	P1=value;
+	P3=0x40;
+	delay(50);
+	EN=0;
+	delay(50);
+	return;
+}
+             //Function for sending values to the data register of LCD
+void display(unsigned char value)  
+{
+	P1=value;
+	P3=0x60;
+	delay(500);
+	EN=0;
+	delay(50);
+	return;
+}
+             //function to initialize the registers and pins of LCD
+void lcdinit(void)         
+{
+	P1=0x00;                 
+	P3=0x00;
+     	delay(15000);display(0x30);delay(4500);display(0x30);delay(300);
+     	display(0x30);delay(650);lcdcmd(0x38);delay(50);lcdcmd(0x0F);
+	delay(50);lcdcmd(0x01);delay(50);lcdcmd(0x06);delay(50);lcdcmd(0x80);
+	delay(50);
+}
+
 unsigned char _c51_external_startup(void) {
 	P0M0=0;	P0M1=0;
 	P1M0=0;	P1M1=0;
@@ -341,6 +420,8 @@ unsigned char _c51_external_startup(void) {
     BDRCON=0;
     BRL=BRG_VAL;
     BDRCON=BRR|TBCK|RBCK|SPD;
+    
+    RS=1; RW=1;
 	
 	TR0=0;
 	TMOD=0x11;
