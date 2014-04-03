@@ -14,12 +14,10 @@
 
 #define FORWARD 1
 #define REVERSE 0
-#define DISTSCALE 1/5
 #define M1P P0_2
 #define M1N P0_3
 #define M2P P0_0
 #define M2N P0_1
-
 #define ERROR 1.2
 #define DISTMIN 400
 #define DISTMAX 2800
@@ -95,20 +93,11 @@ motor motorLeft, motorRight;
 void main (void) {
 	long command, left, right;
 	int rec, i, z=0, k=0;
-	int pow=95;
-	int speed = 5;
 	char first_line[16];
 	P0_5=1;
 
 	lcdinit();
-	sprintf(first_line, "PWR=%d SPD=%dcm/s", pow, speed); 
-	lcdcmd(0x01);          
-	lcdcmd(0x80);
-	while(first_line[k]!='\0')
-	{
-		display(first_line[k]);
-		k++;
-	}
+
 	while (1) {
 		printf("%ld\n", travelled);
 		rec = 1;
@@ -157,23 +146,24 @@ void main (void) {
 			implement_command(command);
 			waitms(200); //prevents receiving commands back to back
 		}
-			z++;
-		if(z >= 150){
-			z=0;
-			speed++;
-			if(speed >=10) speed=0;
-			pow+=5;
-			if(pow >=100) pow=0;
-			sprintf(first_line, "PWR=%d SPD=%dcm/s", pow, speed);   
-		//	lcdcmd(0x01);          
+		z++;
+		if(z >= 5){
+			z = 0;
+			sprintf(first_line, "SPD=%dcm/s", (int)((motorLeft.power + motorRight.power) / 2.0 * RATIO));
 			lcdcmd(0x80);
-			while(first_line[k]!='\0')
-			{
+			k=0;
+			while(first_line[k]!='\0') {
 				display(first_line[k]);
 				k++;
-			}       
-			k=0;
 			}
+			sprintf(first_line, "Travelled=%dcm", (int)(travelled/100.0));             
+			lcdcmd(0xC0);
+			k=0;
+			while(first_line[k]!='\0') {
+				display(first_line[k]);
+				k++;
+			}
+		}
 	}
 } 
 
@@ -391,7 +381,7 @@ void delay(unsigned int time)  //Time delay function
              //always use with every lcd of hitachi
 void lcdinit(void)         
 {
-	P2=0x00;                 
+	P2=0x00;
 	RW=0; EN=0; RS=0;
      	delay(15000);display(0x30);delay(4500);display(0x30);delay(300);
      	display(0x30);delay(650);lcdcmd(0x38);delay(50);lcdcmd(0x0F);

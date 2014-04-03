@@ -14,7 +14,6 @@
 
 #define FORWARD 1
 #define REVERSE 0
-#define DISTSCALE 1/5
 #define M1P P0_2
 #define M1N P0_3
 #define M2P P0_0

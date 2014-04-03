@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by C51
 ; Version 1.0.0 #1034 (Dec 12 2012) (MSVC)
-; This file was generated Thu Apr 03 01:18:49 2014
+; This file was generated Thu Apr 03 02:26:53 2014
 ;--------------------------------------------------------
 $name AutoDisplay
 $optc51 --model-small
@@ -346,12 +346,10 @@ _main_rec_1_56:
 	ds 2
 _main_z_1_56:
 	ds 2
-_main_pow_1_56:
-	ds 2
-_main_speed_1_56:
-	ds 2
 _main_first_line_1_56:
 	ds 16
+_main_temp_4_61:
+	ds 4
 _main_sloc0_1_0:
 	ds 4
 _main_sloc1_1_0:
@@ -419,30 +417,30 @@ _motorISR_sloc1_1_0:
 ; data variables initialization
 ;--------------------------------------------------------
 	rseg R_DINIT
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:87: volatile long unsigned systime = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:85: volatile long unsigned systime = 0;
 	clr	a
 	mov	_systime,a
 	mov	(_systime + 1),a
 	mov	(_systime + 2),a
 	mov	(_systime + 3),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:88: int distance = 1200;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:86: int distance = 1200;
 	mov	_distance,#0xB0
 	mov	(_distance + 1),#0x04
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:89: volatile long travelled = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:87: volatile long travelled = 0;
 	clr	a
 	mov	_travelled,a
 	mov	(_travelled + 1),a
 	mov	(_travelled + 2),a
 	mov	(_travelled + 3),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:90: int totalpower = 50;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:88: int totalpower = 50;
 	mov	_totalpower,#0x32
 	clr	a
 	mov	(_totalpower + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:91: int autonomous = 1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:89: int autonomous = 1;
 	mov	_autonomous,#0x01
 	clr	a
 	mov	(_autonomous + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:92: int orientation = FORWARD;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:90: int orientation = FORWARD;
 	mov	_orientation,#0x01
 	clr	a
 	mov	(_orientation + 1),a
@@ -454,113 +452,42 @@ _motorISR_sloc1_1_0:
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'main'
 ;------------------------------------------------------------
-;command                   Allocated to registers r2 r3 r6 r7 
+;command                   Allocated to registers r2 r3 r4 r5 
 ;left                      Allocated with name '_main_left_1_56'
 ;right                     Allocated with name '_main_right_1_56'
 ;rec                       Allocated with name '_main_rec_1_56'
 ;i                         Allocated to registers r6 r7 
 ;z                         Allocated with name '_main_z_1_56'
-;k                         Allocated to registers r4 r5 
-;pow                       Allocated with name '_main_pow_1_56'
-;speed                     Allocated with name '_main_speed_1_56'
+;k                         Allocated to registers r2 r3 
 ;first_line                Allocated with name '_main_first_line_1_56'
-;temp                      Allocated to registers r2 r3 r6 r7 
+;temp                      Allocated with name '_main_temp_4_61'
 ;sloc0                     Allocated with name '_main_sloc0_1_0'
 ;sloc1                     Allocated with name '_main_sloc1_1_0'
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:95: void main (void) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:93: void main (void) {
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
 	using	0
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:97: int rec, i, z=0, k=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:95: int rec, i, z=0, k=0;
 	clr	a
 	mov	_main_z_1_56,a
 	mov	(_main_z_1_56 + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:98: int pow=95;
-	mov	_main_pow_1_56,#0x5F
-	clr	a
-	mov	(_main_pow_1_56 + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:99: int speed = 5;
-	mov	_main_speed_1_56,#0x05
-	clr	a
-	mov	(_main_speed_1_56 + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:101: P0_5=1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:97: P0_5=1;
 	setb	_P0_5
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:103: lcdinit();
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:99: lcdinit();
 	lcall	_lcdinit
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:104: sprintf(first_line, "PWR=%d SPD=%dcm/s", pow, speed); 
-	mov	a,#0x05
-	push	acc
-	clr	a
-	push	acc
-	mov	a,#0x5F
-	push	acc
-	clr	a
-	push	acc
-	mov	a,#__str_0
-	push	acc
-	mov	a,#(__str_0 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	mov	a,#_main_first_line_1_56
-	push	acc
-	mov	a,#(_main_first_line_1_56 >> 8)
-	push	acc
-	mov	a,#0x40
-	push	acc
-	lcall	_sprintf
-	mov	a,sp
-	add	a,#0xf6
-	mov	sp,a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:105: lcdcmd(0x01);          
-	mov	dpl,#0x01
-	lcall	_lcdcmd
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:106: lcdcmd(0x80);
-	mov	dpl,#0x80
-	lcall	_lcdcmd
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:107: while(first_line[k]!='\0')
-	mov	r2,#0x00
-	mov	r3,#0x00
-L002001?:
-	mov	a,r2
-	add	a,#_main_first_line_1_56
-	mov	r0,a
-	mov	a,@r0
-	mov	r6,a
-	jz	L002061?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:109: display(first_line[k]);
-	mov	dpl,r6
-	push	ar2
-	push	ar3
-	lcall	_display
-	pop	ar3
-	pop	ar2
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:110: k++;
-	inc	r2
-	cjne	r2,#0x00,L002065?
-	inc	r3
-L002065?:
-	mov	ar4,r2
-	mov	ar5,r3
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:112: while (1) {
-	sjmp	L002001?
-L002061?:
-	mov	ar4,r2
-	mov	ar5,r3
-L002035?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:113: printf("%ld\n", travelled);
-	push	ar4
-	push	ar5
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:101: while (1) {
+L002031?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:102: printf("%ld\n", travelled);
 	push	_travelled
 	push	(_travelled + 1)
 	push	(_travelled + 2)
 	push	(_travelled + 3)
-	mov	a,#__str_1
+	mov	a,#__str_0
 	push	acc
-	mov	a,#(__str_1 >> 8)
+	mov	a,#(__str_0 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -568,83 +495,73 @@ L002035?:
 	mov	a,sp
 	add	a,#0xf9
 	mov	sp,a
-	pop	ar5
-	pop	ar4
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:114: rec = 1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:103: rec = 1;
 	mov	_main_rec_1_56,#0x01
 	clr	a
 	mov	(_main_rec_1_56 + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:115: for (i = 0; i < 4; i++){
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:104: for (i = 0; i < 4; i++){
 	mov	r6,#0x00
 	mov	r7,#0x00
-L002037?:
+L002033?:
 	clr	c
 	mov	a,r6
 	subb	a,#0x04
 	mov	a,r7
 	xrl	a,#0x80
 	subb	a,#0x80
-	jnc	L002040?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:116: if (voltage(0) > MIN){
+	jnc	L002036?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:105: if (voltage(0) > MIN){
 	mov	dpl,#0x00
-	push	ar4
-	push	ar5
 	push	ar6
 	push	ar7
 	lcall	_voltage
-	mov	r2,dpl
-	mov	r3,dph
+	mov	r4,dpl
+	mov	r5,dph
 	pop	ar7
 	pop	ar6
-	pop	ar5
-	pop	ar4
 	clr	c
 	mov	a,#0xC8
-	subb	a,r2
+	subb	a,r4
 	clr	a
 	xrl	a,#0x80
-	mov	b,r3
+	mov	b,r5
 	xrl	b,#0x80
 	subb	a,b
-	jnc	L002039?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:117: rec = 0;
+	jnc	L002035?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:106: rec = 0;
 	clr	a
 	mov	_main_rec_1_56,a
 	mov	(_main_rec_1_56 + 1),a
-L002039?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:115: for (i = 0; i < 4; i++){
+L002035?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:104: for (i = 0; i < 4; i++){
 	inc	r6
-	cjne	r6,#0x00,L002037?
+	cjne	r6,#0x00,L002033?
 	inc	r7
-	sjmp	L002037?
-L002040?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:120: if (!rec){
+	sjmp	L002033?
+L002036?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:109: if (!rec){
 	mov	a,_main_rec_1_56
 	orl	a,(_main_rec_1_56 + 1)
-	jz	L002069?
-	ljmp	L002023?
-L002069?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:121: right = getDistance(2);
+	jz	L002060?
+	ljmp	L002020?
+L002060?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:110: right = getDistance(2);
 	mov	dptr,#0x0002
-	push	ar4
-	push	ar5
 	lcall	_getDistance
-	mov	r2,dpl
-	mov	r3,dph
-	mov	_main_right_1_56,r2
-	mov	a,r3
+	mov	r4,dpl
+	mov	r5,dph
+	mov	_main_right_1_56,r4
+	mov	a,r5
 	mov	(_main_right_1_56 + 1),a
 	rlc	a
 	subb	a,acc
 	mov	(_main_right_1_56 + 2),a
 	mov	(_main_right_1_56 + 3),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:122: left = getDistance(1);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:111: left = getDistance(1);
 	mov	dptr,#0x0001
 	lcall	_getDistance
 	mov	r2,dpl
 	mov	r3,dph
-	pop	ar5
-	pop	ar4
 	mov	_main_left_1_56,r2
 	mov	a,r3
 	mov	(_main_left_1_56 + 1),a
@@ -652,67 +569,67 @@ L002069?:
 	subb	a,acc
 	mov	(_main_left_1_56 + 2),a
 	mov	(_main_left_1_56 + 3),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:124: if (orientation == REVERSE){
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:113: if (orientation == REVERSE){
 	mov	a,_orientation
 	orl	a,(_orientation + 1)
-	jnz	L002007?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:125: long temp = left;
-	mov	r2,_main_left_1_56
-	mov	r3,(_main_left_1_56 + 1)
-	mov	r6,(_main_left_1_56 + 2)
-	mov	r7,(_main_left_1_56 + 3)
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:126: left = right;
+	jnz	L002004?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:114: long temp = left;
+	mov	_main_temp_4_61,_main_left_1_56
+	mov	(_main_temp_4_61 + 1),(_main_left_1_56 + 1)
+	mov	(_main_temp_4_61 + 2),(_main_left_1_56 + 2)
+	mov	(_main_temp_4_61 + 3),(_main_left_1_56 + 3)
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:115: left = right;
 	mov	_main_left_1_56,_main_right_1_56
 	mov	(_main_left_1_56 + 1),(_main_right_1_56 + 1)
 	mov	(_main_left_1_56 + 2),(_main_right_1_56 + 2)
 	mov	(_main_left_1_56 + 3),(_main_right_1_56 + 3)
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:127: right = temp;
-	mov	_main_right_1_56,r2
-	mov	(_main_right_1_56 + 1),r3
-	mov	(_main_right_1_56 + 2),r6
-	mov	(_main_right_1_56 + 3),r7
-L002007?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:130: if (autonomous){
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:116: right = temp;
+	mov	_main_right_1_56,_main_temp_4_61
+	mov	(_main_right_1_56 + 1),(_main_temp_4_61 + 1)
+	mov	(_main_right_1_56 + 2),(_main_temp_4_61 + 2)
+	mov	(_main_right_1_56 + 3),(_main_temp_4_61 + 3)
+L002004?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:119: if (autonomous){
 	mov	a,_autonomous
 	orl	a,(_autonomous + 1)
-	jnz	L002071?
-	ljmp	L002024?
-L002071?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:131: if (left > right + 300){
+	jnz	L002062?
+	ljmp	L002021?
+L002062?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:120: if (left > right + 300){
 	mov	a,#0x2C
 	add	a,_main_right_1_56
-	mov	r2,a
+	mov	r6,a
 	mov	a,#0x01
 	addc	a,(_main_right_1_56 + 1)
-	mov	r3,a
+	mov	r7,a
 	clr	a
 	addc	a,(_main_right_1_56 + 2)
-	mov	r6,a
+	mov	r2,a
 	clr	a
 	addc	a,(_main_right_1_56 + 3)
-	mov	r7,a
+	mov	r3,a
 	clr	c
-	mov	a,r2
-	subb	a,_main_left_1_56
-	mov	a,r3
-	subb	a,(_main_left_1_56 + 1)
 	mov	a,r6
-	subb	a,(_main_left_1_56 + 2)
+	subb	a,_main_left_1_56
 	mov	a,r7
+	subb	a,(_main_left_1_56 + 1)
+	mov	a,r2
+	subb	a,(_main_left_1_56 + 2)
+	mov	a,r3
 	xrl	a,#0x80
 	mov	b,(_main_left_1_56 + 3)
 	xrl	b,#0x80
 	subb	a,b
-	jnc	L002018?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:132: motorRight.power = 0;
+	jnc	L002015?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:121: motorRight.power = 0;
 	mov	_motorRight,#0x00
 	mov	(_motorRight + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:133: motorLeft.power = totalpower;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:122: motorLeft.power = totalpower;
 	mov	_motorLeft,_totalpower
 	mov	(_motorLeft + 1),(_totalpower + 1)
-	ljmp	L002024?
-L002018?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:134: } else if (right > left + 300){
+	ljmp	L002021?
+L002015?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:123: } else if (right > left + 300){
 	mov	a,#0x2C
 	add	a,_main_left_1_56
 	mov	r2,a
@@ -721,45 +638,39 @@ L002018?:
 	mov	r3,a
 	clr	a
 	addc	a,(_main_left_1_56 + 2)
-	mov	r6,a
+	mov	r4,a
 	clr	a
 	addc	a,(_main_left_1_56 + 3)
-	mov	r7,a
+	mov	r5,a
 	clr	c
 	mov	a,r2
 	subb	a,_main_right_1_56
 	mov	a,r3
 	subb	a,(_main_right_1_56 + 1)
-	mov	a,r6
+	mov	a,r4
 	subb	a,(_main_right_1_56 + 2)
-	mov	a,r7
+	mov	a,r5
 	xrl	a,#0x80
 	mov	b,(_main_right_1_56 + 3)
 	xrl	b,#0x80
 	subb	a,b
-	jnc	L002015?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:135: motorLeft.power = 0;
+	jnc	L002012?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:124: motorLeft.power = 0;
 	mov	_motorLeft,#0x00
 	mov	(_motorLeft + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:136: motorRight.power = totalpower;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:125: motorRight.power = totalpower;
 	mov	_motorRight,_totalpower
 	mov	(_motorRight + 1),(_totalpower + 1)
-	ljmp	L002024?
-L002015?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:137: } else if (left > distance * ERROR){
-	push	ar4
-	push	ar5
+	ljmp	L002021?
+L002012?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:126: } else if (left > distance * ERROR){
 	mov	dpl,_distance
 	mov	dph,(_distance + 1)
-	push	ar4
-	push	ar5
 	lcall	___sint2fs
 	mov	_main_sloc0_1_0,dpl
 	mov	(_main_sloc0_1_0 + 1),dph
 	mov	(_main_sloc0_1_0 + 2),b
 	mov	(_main_sloc0_1_0 + 3),a
-	pop	ar5
-	pop	ar4
 	push	_main_sloc0_1_0
 	push	(_main_sloc0_1_0 + 1)
 	push	(_main_sloc0_1_0 + 2)
@@ -768,8 +679,8 @@ L002015?:
 	mov	b,#0x99
 	mov	a,#0x3F
 	lcall	___fsmul
-	mov	r4,dpl
-	mov	r5,dph
+	mov	r6,dpl
+	mov	r7,dph
 	mov	r2,b
 	mov	r3,a
 	mov	a,sp
@@ -781,21 +692,19 @@ L002015?:
 	mov	a,(_main_left_1_56 + 3)
 	push	ar2
 	push	ar3
-	push	ar4
-	push	ar5
+	push	ar6
+	push	ar7
 	lcall	___slong2fs
 	mov	_main_sloc1_1_0,dpl
 	mov	(_main_sloc1_1_0 + 1),dph
 	mov	(_main_sloc1_1_0 + 2),b
 	mov	(_main_sloc1_1_0 + 3),a
-	pop	ar5
-	pop	ar4
+	pop	ar7
+	pop	ar6
 	pop	ar3
 	pop	ar2
-	push	ar4
-	push	ar5
-	push	ar4
-	push	ar5
+	push	ar6
+	push	ar7
 	push	ar2
 	push	ar3
 	mov	dpl,_main_sloc1_1_0
@@ -807,29 +716,23 @@ L002015?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-	pop	ar5
-	pop	ar4
-	pop	ar5
-	pop	ar4
 	mov	a,r2
-	jz	L002012?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:138: motorLeft.direction = FORWARD;
+	jz	L002009?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:127: motorLeft.direction = FORWARD;
 	mov	(_motorLeft + 0x0002),#0x01
 	mov	((_motorLeft + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:139: motorRight.direction = FORWARD;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:128: motorRight.direction = FORWARD;
 	mov	(_motorRight + 0x0002),#0x01
 	mov	((_motorRight + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:140: motorLeft.power = totalpower;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:129: motorLeft.power = totalpower;
 	mov	_motorLeft,_totalpower
 	mov	(_motorLeft + 1),(_totalpower + 1)
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:141: motorRight.power = totalpower;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:130: motorRight.power = totalpower;
 	mov	_motorRight,_totalpower
 	mov	(_motorRight + 1),(_totalpower + 1)
-	ljmp	L002024?
-L002012?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:142: } else if (left < distance / ERROR){
-	push	ar4
-	push	ar5
+	ljmp	L002021?
+L002009?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:131: } else if (left < distance / ERROR){
 	mov	a,#0x9A
 	push	acc
 	mov	a,#0x99
@@ -844,15 +747,15 @@ L002012?:
 	lcall	___fsdiv
 	mov	r2,dpl
 	mov	r3,dph
-	mov	r6,b
-	mov	r7,a
+	mov	r4,b
+	mov	r5,a
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
 	push	ar2
 	push	ar3
-	push	ar6
-	push	ar7
+	push	ar4
+	push	ar5
 	mov	dpl,_main_sloc1_1_0
 	mov	dph,(_main_sloc1_1_0 + 1)
 	mov	b,(_main_sloc1_1_0 + 2)
@@ -862,126 +765,132 @@ L002012?:
 	mov	a,sp
 	add	a,#0xfc
 	mov	sp,a
-	pop	ar5
-	pop	ar4
 	mov	a,r2
-	jz	L002009?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:143: motorLeft.direction = REVERSE;
+	jz	L002006?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:132: motorLeft.direction = REVERSE;
 	mov	(_motorLeft + 0x0002),#0x00
 	mov	((_motorLeft + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:144: motorRight.direction = REVERSE;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:133: motorRight.direction = REVERSE;
 	mov	(_motorRight + 0x0002),#0x00
 	mov	((_motorRight + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:145: motorLeft.power = totalpower;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:134: motorLeft.power = totalpower;
 	mov	_motorLeft,_totalpower
 	mov	(_motorLeft + 1),(_totalpower + 1)
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:146: motorRight.power = totalpower;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:135: motorRight.power = totalpower;
 	mov	_motorRight,_totalpower
 	mov	(_motorRight + 1),(_totalpower + 1)
-	sjmp	L002024?
-L002009?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:148: motorLeft.power = 0;
+	sjmp	L002021?
+L002006?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:137: motorLeft.power = 0;
 	mov	_motorLeft,#0x00
 	mov	(_motorLeft + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:149: motorRight.power = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:138: motorRight.power = 0;
 	mov	_motorRight,#0x00
 	mov	(_motorRight + 1),#0x00
-	sjmp	L002024?
-L002023?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:153: motorLeft.power = 0;
+	sjmp	L002021?
+L002020?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:142: motorLeft.power = 0;
 	mov	_motorLeft,#0x00
 	mov	(_motorLeft + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:154: motorRight.power = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:143: motorRight.power = 0;
 	mov	_motorRight,#0x00
 	mov	(_motorRight + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:155: waitms(10); //this makes sure that the power change takes effect before shutting off the interrupt
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:144: waitms(10); //this makes sure that the power change takes effect before shutting off the interrupt
 	mov	dptr,#(0x0A&0x00ff)
 	clr	a
 	mov	b,a
-	push	ar4
-	push	ar5
 	lcall	_waitms
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:156: command = rx_byte();
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:145: command = rx_byte();
 	lcall	_rx_byte
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:157: implement_command(command);
+	mov	r2,dpl
 	mov	r3,#0x00
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:146: implement_command(command);
+	mov	dpl,r2
 	mov	dph,r3
 	lcall	_implement_command
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:158: waitms(200); //prevents receiving commands back to back
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:147: waitms(200); //prevents receiving commands back to back
 	mov	dptr,#(0xC8&0x00ff)
 	clr	a
 	mov	b,a
 	lcall	_waitms
-	pop	ar5
-	pop	ar4
-L002024?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:160: z++;
+L002021?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:149: z++;
 	inc	_main_z_1_56
 	clr	a
-	cjne	a,_main_z_1_56,L002076?
+	cjne	a,_main_z_1_56,L002067?
 	inc	(_main_z_1_56 + 1)
-L002076?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:161: if(z >= 150){
+L002067?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:150: if(z >= 5){
 	clr	c
 	mov	a,_main_z_1_56
-	subb	a,#0x96
+	subb	a,#0x05
 	mov	a,(_main_z_1_56 + 1)
 	xrl	a,#0x80
 	subb	a,#0x80
-	jnc	L002077?
-	ljmp	L002035?
-L002077?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:162: z=0;
+	jnc	L002068?
+	ljmp	L002031?
+L002068?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:151: z = 0;
 	clr	a
 	mov	_main_z_1_56,a
 	mov	(_main_z_1_56 + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:163: speed++;
-	inc	_main_speed_1_56
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:152: sprintf(first_line, "SPD=%dcm/s", (int)((motorLeft.power + motorRight.power) / 2.0 * RATIO));
+	mov	a,_motorRight
+	add	a,_motorLeft
+	mov	dpl,a
+	mov	a,(_motorRight + 1)
+	addc	a,(_motorLeft + 1)
+	mov	dph,a
+	lcall	___sint2fs
+	mov	r2,dpl
+	mov	r3,dph
+	mov	r4,b
+	mov	r5,a
 	clr	a
-	cjne	a,_main_speed_1_56,L002078?
-	inc	(_main_speed_1_56 + 1)
-L002078?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:164: if(speed >=10) speed=0;
-	clr	c
-	mov	a,_main_speed_1_56
-	subb	a,#0x0A
-	mov	a,(_main_speed_1_56 + 1)
-	xrl	a,#0x80
-	subb	a,#0x80
-	jc	L002026?
-	clr	a
-	mov	_main_speed_1_56,a
-	mov	(_main_speed_1_56 + 1),a
-L002026?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:165: pow+=5;
-	mov	a,#0x05
-	add	a,_main_pow_1_56
-	mov	_main_pow_1_56,a
-	clr	a
-	addc	a,(_main_pow_1_56 + 1)
-	mov	(_main_pow_1_56 + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:166: if(pow >=100) pow=0;
-	clr	c
-	mov	a,_main_pow_1_56
-	subb	a,#0x64
-	mov	a,(_main_pow_1_56 + 1)
-	xrl	a,#0x80
-	subb	a,#0x80
-	jc	L002028?
-	clr	a
-	mov	_main_pow_1_56,a
-	mov	(_main_pow_1_56 + 1),a
-L002028?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:167: sprintf(first_line, "PWR=%d SPD=%dcm/s", pow, speed);   
+	push	acc
+	push	acc
+	push	acc
+	mov	a,#0x40
+	push	acc
+	mov	dpl,r2
+	mov	dph,r3
+	mov	b,r4
+	mov	a,r5
+	lcall	___fsdiv
+	mov	r2,dpl
+	mov	r3,dph
+	mov	r4,b
+	mov	r5,a
+	mov	a,sp
+	add	a,#0xfc
+	mov	sp,a
+	push	ar2
+	push	ar3
 	push	ar4
 	push	ar5
-	push	_main_speed_1_56
-	push	(_main_speed_1_56 + 1)
-	push	_main_pow_1_56
-	push	(_main_pow_1_56 + 1)
-	mov	a,#__str_0
+	mov	dptr,#0xD70A
+	mov	b,#0x23
+	mov	a,#0x3E
+	lcall	___fsmul
+	mov	r2,dpl
+	mov	r3,dph
+	mov	r4,b
+	mov	r5,a
+	mov	a,sp
+	add	a,#0xfc
+	mov	sp,a
+	mov	dpl,r2
+	mov	dph,r3
+	mov	b,r4
+	mov	a,r5
+	lcall	___fs2sint
+	mov	r2,dpl
+	mov	r3,dph
+	push	ar2
+	push	ar3
+	mov	a,#__str_1
 	push	acc
-	mov	a,#(__str_0 >> 8)
+	mov	a,#(__str_1 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -993,45 +902,120 @@ L002028?:
 	push	acc
 	lcall	_sprintf
 	mov	a,sp
-	add	a,#0xf6
+	add	a,#0xf8
 	mov	sp,a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:169: lcdcmd(0x80);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:153: lcdcmd(0x80);
 	mov	dpl,#0x80
 	lcall	_lcdcmd
-	pop	ar5
-	pop	ar4
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:170: while(first_line[k]!='\0')
-	mov	ar2,r4
-	mov	ar3,r5
-L002029?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:155: while(first_line[k]!='\0') {
+	mov	r2,#0x00
+	mov	r3,#0x00
+L002022?:
 	mov	a,r2
 	add	a,#_main_first_line_1_56
 	mov	r0,a
 	mov	a,@r0
-	mov	r6,a
-	jz	L002031?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:172: display(first_line[k]);
-	mov	dpl,r6
+	mov	r4,a
+	jz	L002024?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:156: display(first_line[k]);
+	mov	dpl,r4
 	push	ar2
 	push	ar3
 	lcall	_display
 	pop	ar3
 	pop	ar2
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:173: k++;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:157: k++;
 	inc	r2
-	cjne	r2,#0x00,L002029?
+	cjne	r2,#0x00,L002022?
 	inc	r3
-	sjmp	L002029?
-L002031?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:175: k=0;
-	mov	r4,#0x00
-	mov	r5,#0x00
-	ljmp	L002035?
+	sjmp	L002022?
+L002024?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:159: sprintf(first_line, "Travelled=%dcm", (int)(travelled/100.0));             
+	mov	dpl,_travelled
+	mov	dph,(_travelled + 1)
+	mov	b,(_travelled + 2)
+	mov	a,(_travelled + 3)
+	lcall	___slong2fs
+	mov	r2,dpl
+	mov	r3,dph
+	mov	r4,b
+	mov	r5,a
+	clr	a
+	push	acc
+	push	acc
+	mov	a,#0xC8
+	push	acc
+	mov	a,#0x42
+	push	acc
+	mov	dpl,r2
+	mov	dph,r3
+	mov	b,r4
+	mov	a,r5
+	lcall	___fsdiv
+	mov	r2,dpl
+	mov	r3,dph
+	mov	r4,b
+	mov	r5,a
+	mov	a,sp
+	add	a,#0xfc
+	mov	sp,a
+	mov	dpl,r2
+	mov	dph,r3
+	mov	b,r4
+	mov	a,r5
+	lcall	___fs2sint
+	mov	r2,dpl
+	mov	r3,dph
+	push	ar2
+	push	ar3
+	mov	a,#__str_2
+	push	acc
+	mov	a,#(__str_2 >> 8)
+	push	acc
+	mov	a,#0x80
+	push	acc
+	mov	a,#_main_first_line_1_56
+	push	acc
+	mov	a,#(_main_first_line_1_56 >> 8)
+	push	acc
+	mov	a,#0x40
+	push	acc
+	lcall	_sprintf
+	mov	a,sp
+	add	a,#0xf8
+	mov	sp,a
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:160: lcdcmd(0xC0);
+	mov	dpl,#0xC0
+	lcall	_lcdcmd
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:162: while(first_line[k]!='\0') {
+	mov	r2,#0x00
+	mov	r3,#0x00
+L002025?:
+	mov	a,r2
+	add	a,#_main_first_line_1_56
+	mov	r0,a
+	mov	a,@r0
+	mov	r4,a
+	jnz	L002071?
+	ljmp	L002031?
+L002071?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:163: display(first_line[k]);
+	mov	dpl,r4
+	push	ar2
+	push	ar3
+	lcall	_display
+	pop	ar3
+	pop	ar2
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:164: k++;
+	inc	r2
+	cjne	r2,#0x00,L002025?
+	inc	r3
+	sjmp	L002025?
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'timeISR'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:180: void timeISR (void) interrupt 3 {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:170: void timeISR (void) interrupt 3 {
 ;	-----------------------------------------
 ;	 function timeISR
 ;	-----------------------------------------
@@ -1039,7 +1023,7 @@ _timeISR:
 	push	acc
 	push	psw
 	mov	psw,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:181: systime++;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:171: systime++;
 	mov	a,#0x01
 	add	a,_systime
 	mov	_systime,a
@@ -1063,7 +1047,7 @@ _timeISR:
 ;------------------------------------------------------------
 ;sloc0                     Allocated with name '_motorISR_sloc0_1_0'
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:184: void motorISR (void) interrupt 1 {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:174: void motorISR (void) interrupt 1 {
 ;	-----------------------------------------
 ;	 function motorISR
 ;	-----------------------------------------
@@ -1083,7 +1067,7 @@ _motorISR:
 	push	(0+1)
 	push	psw
 	mov	psw,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:185: if((pwmcount+=5) > 99){
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:175: if((pwmcount+=5) > 99){
 	mov	a,#0x05
 	add	a,_pwmcount
 	mov	r2,a
@@ -1100,11 +1084,11 @@ _motorISR:
 	jc	L004010?
 	ljmp	L004002?
 L004010?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:186: pwmcount = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:176: pwmcount = 0;
 	clr	a
 	mov	_pwmcount,a
 	mov	(_pwmcount + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:187: travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:177: travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
 	mov	a,_motorRight
 	add	a,_motorLeft
 	mov	dpl,a
@@ -1170,13 +1154,13 @@ L004010?:
 	mov	(_travelled + 2),b
 	mov	(_travelled + 3),a
 L004002?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:190: if (orientation == REVERSE) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:180: if (orientation == REVERSE) {
 	mov	a,_orientation
 	orl	a,(_orientation + 1)
 	jz	L004011?
 	ljmp	L004004?
 L004011?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:191: M1P = (motorLeft.power > pwmcount ? 1 : 0) * motorLeft.direction;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:181: M1P = (motorLeft.power > pwmcount ? 1 : 0) * motorLeft.direction;
 	clr	c
 	mov	a,_pwmcount
 	subb	a,_motorLeft
@@ -1205,7 +1189,7 @@ L004011?:
 	orl	a,r5
 	add	a,#0xff
 	mov	_P0_2,c
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:192: M1N = (motorLeft.power > pwmcount ? 1 : 0) * !motorLeft.direction;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:182: M1N = (motorLeft.power > pwmcount ? 1 : 0) * !motorLeft.direction;
 	clr	c
 	mov	a,_pwmcount
 	subb	a,_motorLeft
@@ -1226,7 +1210,7 @@ L004012?:
 	mul	ab
 	add	a,#0xff
 	mov	_P0_3,c
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:194: M2P = (motorRight.power > pwmcount ? 1 : 0) * motorRight.direction;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:184: M2P = (motorRight.power > pwmcount ? 1 : 0) * motorRight.direction;
 	clr	c
 	mov	a,_pwmcount
 	subb	a,_motorRight
@@ -1255,7 +1239,7 @@ L004012?:
 	orl	a,r5
 	add	a,#0xff
 	mov	_P0_0,c
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:195: M2N = (motorRight.power > pwmcount ? 1 : 0) * !motorRight.direction;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:185: M2N = (motorRight.power > pwmcount ? 1 : 0) * !motorRight.direction;
 	clr	c
 	mov	a,_pwmcount
 	subb	a,_motorRight
@@ -1278,7 +1262,7 @@ L004013?:
 	mov	_P0_1,c
 	ljmp	L004006?
 L004004?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:197: M2P = (motorLeft.power > pwmcount ? 1 : 0) * !motorLeft.direction;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:187: M2P = (motorLeft.power > pwmcount ? 1 : 0) * !motorLeft.direction;
 	clr	c
 	mov	a,_pwmcount
 	subb	a,_motorLeft
@@ -1299,7 +1283,7 @@ L004014?:
 	mul	ab
 	add	a,#0xff
 	mov	_P0_0,c
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:198: M2N = (motorLeft.power > pwmcount ? 1 : 0) * motorLeft.direction;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:188: M2N = (motorLeft.power > pwmcount ? 1 : 0) * motorLeft.direction;
 	clr	c
 	mov	a,_pwmcount
 	subb	a,_motorLeft
@@ -1321,7 +1305,7 @@ L004014?:
 	orl	a,r3
 	add	a,#0xff
 	mov	_P0_1,c
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:200: M1P = (motorRight.power > pwmcount ? 1 : 0) * !motorRight.direction;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:190: M1P = (motorRight.power > pwmcount ? 1 : 0) * !motorRight.direction;
 	clr	c
 	mov	a,_pwmcount
 	subb	a,_motorRight
@@ -1342,7 +1326,7 @@ L004015?:
 	mul	ab
 	add	a,#0xff
 	mov	_P0_2,c
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:201: M1N = (motorRight.power > pwmcount ? 1 : 0) * motorRight.direction;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:191: M1N = (motorRight.power > pwmcount ? 1 : 0) * motorRight.direction;
 	clr	c
 	mov	a,_pwmcount
 	subb	a,_motorRight
@@ -1386,13 +1370,13 @@ L004006?:
 ;sensor                    Allocated to registers r2 r3 
 ;v                         Allocated to registers r2 r3 r4 r5 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:205: int getDistance(int sensor){
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:195: int getDistance(int sensor){
 ;	-----------------------------------------
 ;	 function getDistance
 ;	-----------------------------------------
 _getDistance:
 	mov	r2,dpl
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:207: v = voltage(sensor - 1);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:197: v = voltage(sensor - 1);
 	mov	a,r2
 	dec	a
 	mov	dpl,a
@@ -1404,7 +1388,7 @@ _getDistance:
 	subb	a,acc
 	mov	r4,a
 	mov	r5,a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:208: return 3000-v;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:198: return 3000-v;
 	mov	a,#0xB8
 	clr	c
 	subb	a,r2
@@ -1424,33 +1408,17 @@ _getDistance:
 ;------------------------------------------------------------
 ;command                   Allocated to registers r2 r3 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:211: void printCommand(int command){
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:201: void printCommand(int command){
 ;	-----------------------------------------
 ;	 function printCommand
 ;	-----------------------------------------
 _printCommand:
 	mov	r2,dpl
 	mov	r3,dph
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:212: if(command==FLIP)
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:202: if(command==FLIP)
 	cjne	r2,#0x03,L006011?
 	cjne	r3,#0x00,L006011?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:213: printf("Recieved flip command \n");
-	mov	a,#__str_2
-	push	acc
-	mov	a,#(__str_2 >> 8)
-	push	acc
-	mov	a,#0x80
-	push	acc
-	lcall	_printf
-	dec	sp
-	dec	sp
-	dec	sp
-	ljmp	L006012?
-L006011?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:214: else if (command == PARK)
-	cjne	r2,#0x09,L006008?
-	cjne	r3,#0x00,L006008?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:215: printf("Received park command \n");
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:203: printf("Recieved flip command \n");
 	mov	a,#__str_3
 	push	acc
 	mov	a,#(__str_3 >> 8)
@@ -1461,12 +1429,12 @@ L006011?:
 	dec	sp
 	dec	sp
 	dec	sp
-	sjmp	L006012?
-L006008?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:216: else if (command == CLOSE)
-	cjne	r2,#0x06,L006005?
-	cjne	r3,#0x00,L006005?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:217: printf("Received closer command \n");
+	ljmp	L006012?
+L006011?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:204: else if (command == PARK)
+	cjne	r2,#0x09,L006008?
+	cjne	r3,#0x00,L006008?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:205: printf("Received park command \n");
 	mov	a,#__str_4
 	push	acc
 	mov	a,#(__str_4 >> 8)
@@ -1478,11 +1446,11 @@ L006008?:
 	dec	sp
 	dec	sp
 	sjmp	L006012?
-L006005?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:218: else if (command == FAR)
-	cjne	r2,#0x0C,L006002?
-	cjne	r3,#0x00,L006002?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:219: printf("Received farther command \n");
+L006008?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:206: else if (command == CLOSE)
+	cjne	r2,#0x06,L006005?
+	cjne	r3,#0x00,L006005?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:207: printf("Received closer command \n");
 	mov	a,#__str_5
 	push	acc
 	mov	a,#(__str_5 >> 8)
@@ -1494,13 +1462,29 @@ L006005?:
 	dec	sp
 	dec	sp
 	sjmp	L006012?
-L006002?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:221: printf("Received %d\n", command);
-	push	ar2
-	push	ar3
+L006005?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:208: else if (command == FAR)
+	cjne	r2,#0x0C,L006002?
+	cjne	r3,#0x00,L006002?
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:209: printf("Received farther command \n");
 	mov	a,#__str_6
 	push	acc
 	mov	a,#(__str_6 >> 8)
+	push	acc
+	mov	a,#0x80
+	push	acc
+	lcall	_printf
+	dec	sp
+	dec	sp
+	dec	sp
+	sjmp	L006012?
+L006002?:
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:211: printf("Received %d\n", command);
+	push	ar2
+	push	ar3
+	mov	a,#__str_7
+	push	acc
+	mov	a,#(__str_7 >> 8)
 	push	acc
 	mov	a,#0x80
 	push	acc
@@ -1509,18 +1493,18 @@ L006002?:
 	add	a,#0xfb
 	mov	sp,a
 L006012?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:222: return;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:212: return;
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'parallelpark'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:225: void parallelpark () {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:215: void parallelpark () {
 ;	-----------------------------------------
 ;	 function parallelpark
 ;	-----------------------------------------
 _parallelpark:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:226: orientation=!orientation;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:216: orientation=!orientation;
 	mov	a,_orientation
 	orl	a,(_orientation + 1)
 	cjne	a,#0x01,L007003?
@@ -1530,66 +1514,66 @@ L007003?:
 	mov	r2,a
 	mov	_orientation,r2
 	mov	(_orientation + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:227: motorLeft.power = 85;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:217: motorLeft.power = 85;
 	mov	_motorLeft,#0x55
 	mov	(_motorLeft + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:228: motorRight.power = 85;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:218: motorRight.power = 85;
 	mov	_motorRight,#0x55
 	mov	(_motorRight + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:229: motorLeft.direction = FORWARD;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:219: motorLeft.direction = FORWARD;
 	mov	(_motorLeft + 0x0002),#0x01
 	mov	((_motorLeft + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:230: motorRight.direction = FORWARD;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:220: motorRight.direction = FORWARD;
 	mov	(_motorRight + 0x0002),#0x01
 	mov	((_motorRight + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:231: waitms(1100);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:221: waitms(1100);
 	mov	dptr,#0x044C
 	clr	a
 	mov	b,a
 	lcall	_waitms
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:233: motorLeft.power = 50;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:223: motorLeft.power = 50;
 	mov	_motorLeft,#0x32
 	mov	(_motorLeft + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:234: motorRight.power = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:224: motorRight.power = 0;
 	mov	_motorRight,#0x00
 	mov	(_motorRight + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:235: motorLeft.direction = REVERSE;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:225: motorLeft.direction = REVERSE;
 	mov	(_motorLeft + 0x0002),#0x00
 	mov	((_motorLeft + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:236: motorRight.direction = REVERSE;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:226: motorRight.direction = REVERSE;
 	mov	(_motorRight + 0x0002),#0x00
 	mov	((_motorRight + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:237: waitms(1000);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:227: waitms(1000);
 	mov	dptr,#0x03E8
 	clr	a
 	mov	b,a
 	lcall	_waitms
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:239: motorLeft.power = 75;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:229: motorLeft.power = 75;
 	mov	_motorLeft,#0x4B
 	mov	(_motorLeft + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:240: motorRight.power = 75;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:230: motorRight.power = 75;
 	mov	_motorRight,#0x4B
 	mov	(_motorRight + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:241: waitms(900);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:231: waitms(900);
 	mov	dptr,#0x0384
 	clr	a
 	mov	b,a
 	lcall	_waitms
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:243: motorLeft.power = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:233: motorLeft.power = 0;
 	mov	_motorLeft,#0x00
 	mov	(_motorLeft + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:244: motorRight.power = 45;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:234: motorRight.power = 45;
 	mov	_motorRight,#0x2D
 	mov	(_motorRight + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:245: waitms(1035);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:235: waitms(1035);
 	mov	dptr,#0x040B
 	clr	a
 	mov	b,a
 	lcall	_waitms
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:247: motorLeft.power = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:237: motorLeft.power = 0;
 	mov	_motorLeft,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:248: motorRight.power = 0;
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:249: orientation=!orientation;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:238: motorRight.power = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:239: orientation=!orientation;
 	clr	a
 	mov	(_motorLeft + 1),a
 	mov	_motorRight,a
@@ -1603,35 +1587,35 @@ L007004?:
 	mov	r2,a
 	mov	_orientation,r2
 	mov	(_orientation + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:250: return;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:240: return;
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'turn180'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:253: void turn180 (void) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:243: void turn180 (void) {
 ;	-----------------------------------------
 ;	 function turn180
 ;	-----------------------------------------
 _turn180:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:254: motorLeft.power = 50;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:244: motorLeft.power = 50;
 	mov	_motorLeft,#0x32
 	mov	(_motorLeft + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:255: motorRight.power = 50;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:245: motorRight.power = 50;
 	mov	_motorRight,#0x32
 	mov	(_motorRight + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:256: motorLeft.direction = FORWARD;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:246: motorLeft.direction = FORWARD;
 	mov	(_motorLeft + 0x0002),#0x01
 	mov	((_motorLeft + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:257: motorRight.direction = REVERSE;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:247: motorRight.direction = REVERSE;
 	mov	(_motorRight + 0x0002),#0x00
 	mov	((_motorRight + 0x0002) + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:258: waitms(3250); //2650
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:248: waitms(3250); //2650
 	mov	dptr,#0x0CB2
 	clr	a
 	mov	b,a
 	lcall	_waitms
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:260: if(orientation==FORWARD) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:250: if(orientation==FORWARD) {
 	mov	a,#0x01
 	cjne	a,_orientation,L008007?
 	clr	a
@@ -1640,101 +1624,101 @@ _turn180:
 L008007?:
 	sjmp	L008002?
 L008008?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:261: orientation=REVERSE;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:251: orientation=REVERSE;
 	clr	a
 	mov	_orientation,a
 	mov	(_orientation + 1),a
 	sjmp	L008003?
 L008002?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:263: orientation=FORWARD;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:253: orientation=FORWARD;
 	mov	_orientation,#0x01
 	clr	a
 	mov	(_orientation + 1),a
 L008003?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:265: motorLeft.power = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:255: motorLeft.power = 0;
 	mov	_motorLeft,#0x00
 	mov	(_motorLeft + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:266: motorRight.power = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:256: motorRight.power = 0;
 	mov	_motorRight,#0x00
 	mov	(_motorRight + 1),#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:267: return;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:257: return;
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'implement_command'
 ;------------------------------------------------------------
 ;command                   Allocated to registers r2 r3 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:270: void implement_command (int command) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:260: void implement_command (int command) {
 ;	-----------------------------------------
 ;	 function implement_command
 ;	-----------------------------------------
 _implement_command:
 	mov	r2,dpl
 	mov	r3,dph
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:271: if (command == FLIP) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:261: if (command == FLIP) {
 	cjne	r2,#0x03,L009010?
 	cjne	r3,#0x00,L009010?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:272: autonomous = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:262: autonomous = 0;
 	clr	a
 	mov	_autonomous,a
 	mov	(_autonomous + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:273: turn180();
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:263: turn180();
 	lcall	_turn180
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:274: autonomous = 1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:264: autonomous = 1;
 	mov	_autonomous,#0x01
 	clr	a
 	mov	(_autonomous + 1),a
 	sjmp	L009011?
 L009010?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:275: } else if (command == CLOSE) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:265: } else if (command == CLOSE) {
 	cjne	r2,#0x06,L009007?
 	cjne	r3,#0x00,L009007?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:276: changeDistance(1);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:266: changeDistance(1);
 	mov	dptr,#0x0001
 	lcall	_changeDistance
 	sjmp	L009011?
 L009007?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:277: } else if (command == FAR) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:267: } else if (command == FAR) {
 	cjne	r2,#0x0C,L009004?
 	cjne	r3,#0x00,L009004?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:278: changeDistance(0);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:268: changeDistance(0);
 	mov	dptr,#0x0000
 	lcall	_changeDistance
 	sjmp	L009011?
 L009004?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:279: } else if (command == PARK) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:269: } else if (command == PARK) {
 	cjne	r2,#0x09,L009011?
 	cjne	r3,#0x00,L009011?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:280: autonomous = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:270: autonomous = 0;
 	clr	a
 	mov	_autonomous,a
 	mov	(_autonomous + 1),a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:281: parallelpark();
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:271: parallelpark();
 	lcall	_parallelpark
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:282: autonomous = 1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:272: autonomous = 1;
 	mov	_autonomous,#0x01
 	clr	a
 	mov	(_autonomous + 1),a
 L009011?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:284: return;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:274: return;
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'changeDistance'
 ;------------------------------------------------------------
 ;change                    Allocated to registers r2 r3 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:287: void changeDistance(int change){
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:277: void changeDistance(int change){
 ;	-----------------------------------------
 ;	 function changeDistance
 ;	-----------------------------------------
 _changeDistance:
 	mov	r2,dpl
 	mov	r3,dph
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:288: if(change) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:278: if(change) {
 	mov	a,r2
 	orl	a,r3
 	jz	L010006?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:289: if (distance > DISTMIN) distance -= 400;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:279: if (distance > DISTMIN) distance -= 400;
 	clr	c
 	mov	a,#0x90
 	subb	a,_distance
@@ -1751,7 +1735,7 @@ _changeDistance:
 	mov	(_distance + 1),a
 	ret
 L010006?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:291: if (distance < DISTMAX) distance += 400;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:281: if (distance < DISTMAX) distance += 400;
 	clr	c
 	mov	a,_distance
 	subb	a,#0xF0
@@ -1775,14 +1759,14 @@ L010008?:
 ;v                         Allocated to registers r4 r5 
 ;k                         Allocated to registers 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:295: unsigned char rx_byte (void) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:285: unsigned char rx_byte (void) {
 ;	-----------------------------------------
 ;	 function rx_byte
 ;	-----------------------------------------
 _rx_byte:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:299: ET0 = 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:289: ET0 = 0;
 	clr	_ET0
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:300: while (voltage(0)<MIN);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:290: while (voltage(0)<MIN);
 L011001?:
 	mov	dpl,#0x00
 	lcall	_voltage
@@ -1795,21 +1779,21 @@ L011001?:
 	xrl	a,#0x80
 	subb	a,#0x80
 	jc	L011001?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:301: P0_5=!P0_5;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:291: P0_5=!P0_5;
 	cpl	_P0_5
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:302: val=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:292: val=0;
 	mov	r2,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:303: wait_one_and_half_bit_time();
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:293: wait_one_and_half_bit_time();
 	push	ar2
 	lcall	_wait_one_and_half_bit_time
 	pop	ar2
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:304: for(j=0; j<4; j++) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:294: for(j=0; j<4; j++) {
 	mov	r3,#0x00
 L011004?:
 	cjne	r3,#0x04,L011019?
 L011019?:
 	jnc	L011007?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:305: v=voltage(0);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:295: v=voltage(0);
 	mov	dpl,#0x00
 	push	ar2
 	push	ar3
@@ -1818,7 +1802,7 @@ L011019?:
 	mov	r5,dph
 	pop	ar3
 	pop	ar2
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:306: val|=(v>MIN)?(0x01<<j):0x00;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:296: val|=(v>MIN)?(0x01<<j):0x00;
 	clr	c
 	mov	a,#0xC8
 	subb	a,r4
@@ -1843,23 +1827,23 @@ L011010?:
 L011011?:
 	mov	a,r4
 	orl	ar2,a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:307: P0_5=!P0_5;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:297: P0_5=!P0_5;
 	cpl	_P0_5
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:308: wait_bit_time();
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:298: wait_bit_time();
 	push	ar2
 	push	ar3
 	lcall	_wait_bit_time
 	pop	ar3
 	pop	ar2
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:304: for(j=0; j<4; j++) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:294: for(j=0; j<4; j++) {
 	inc	r3
 	sjmp	L011004?
 L011007?:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:310: P0_5=1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:300: P0_5=1;
 	setb	_P0_5
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:311: ET0 = 1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:301: ET0 = 1;
 	setb	_ET0
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:312: return val;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:302: return val;
 	mov	dpl,r2
 	ret
 ;------------------------------------------------------------
@@ -1868,7 +1852,7 @@ L011007?:
 ;time                      Allocated to registers r2 r3 r4 r5 
 ;time1                     Allocated to registers r2 r3 r4 r5 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:315: void waitms(long time){
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:305: void waitms(long time){
 ;	-----------------------------------------
 ;	 function waitms
 ;	-----------------------------------------
@@ -1877,7 +1861,7 @@ _waitms:
 	mov	r3,dph
 	mov	r4,b
 	mov	r5,a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:316: long time1= systime+time;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:306: long time1= systime+time;
 	mov	a,r2
 	add	a,_systime
 	mov	r2,a
@@ -1890,7 +1874,7 @@ _waitms:
 	mov	a,r5
 	addc	a,(_systime + 3)
 	mov	r5,a
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:317: while(!(time1 < systime));
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:307: while(!(time1 < systime));
 L012001?:
 	mov	ar6,r2
 	mov	ar7,r3
@@ -1912,17 +1896,17 @@ L012001?:
 ;------------------------------------------------------------
 ;time_start                Allocated to registers r2 r3 r4 r5 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:320: void wait_bit_time (void) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:310: void wait_bit_time (void) {
 ;	-----------------------------------------
 ;	 function wait_bit_time
 ;	-----------------------------------------
 _wait_bit_time:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:321: long time_start=systime;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:311: long time_start=systime;
 	mov	r2,_systime
 	mov	r3,(_systime + 1)
 	mov	r4,(_systime + 2)
 	mov	r5,(_systime + 3)
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:322: while (!(systime > time_start+9));
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:312: while (!(systime > time_start+9));
 	mov	a,#0x09
 	add	a,r2
 	mov	r2,a
@@ -1946,24 +1930,24 @@ L013001?:
 	mov	a,r5
 	subb	a,(_systime + 3)
 	jnc	L013001?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:323: return;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:313: return;
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'wait_one_and_half_bit_time'
 ;------------------------------------------------------------
 ;time_start                Allocated to registers r2 r3 r4 r5 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:326: void wait_one_and_half_bit_time(void) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:316: void wait_one_and_half_bit_time(void) {
 ;	-----------------------------------------
 ;	 function wait_one_and_half_bit_time
 ;	-----------------------------------------
 _wait_one_and_half_bit_time:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:327: long time_start=systime;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:317: long time_start=systime;
 	mov	r2,_systime
 	mov	r3,(_systime + 1)
 	mov	r4,(_systime + 2)
 	mov	r5,(_systime + 3)
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:328: while (!(systime > time_start+14));
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:318: while (!(systime > time_start+14));
 	mov	a,#0x0E
 	add	a,r2
 	mov	r2,a
@@ -1987,24 +1971,24 @@ L014001?:
 	mov	a,r5
 	subb	a,(_systime + 3)
 	jnc	L014001?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:329: return;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:319: return;
 	ret
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'SPIWrite'
 ;------------------------------------------------------------
 ;value                     Allocated to registers r2 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:332: void SPIWrite(unsigned char value)
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:322: void SPIWrite(unsigned char value)
 ;	-----------------------------------------
 ;	 function SPIWrite
 ;	-----------------------------------------
 _SPIWrite:
 	mov	r2,dpl
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:334: SPSTA&=(~SPIF); // Clear the SPIF flag in SPSTA
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:324: SPSTA&=(~SPIF); // Clear the SPIF flag in SPSTA
 	anl	_SPSTA,#0x7F
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:335: SPDAT=value;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:325: SPDAT=value;
 	mov	_SPDAT,r2
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:336: while((SPSTA & SPIF)!=SPIF); //Wait for transmission to end
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:326: while((SPSTA & SPIF)!=SPIF); //Wait for transmission to end
 L015001?:
 	mov	a,#0x80
 	anl	a,_SPSTA
@@ -2017,26 +2001,26 @@ L015001?:
 ;channel                   Allocated to registers r2 
 ;adc                       Allocated to registers r2 r3 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:339: unsigned int GetADC(unsigned char channel) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:329: unsigned int GetADC(unsigned char channel) {
 ;	-----------------------------------------
 ;	 function GetADC
 ;	-----------------------------------------
 _GetADC:
 	mov	r2,dpl
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:343: SPCON&=(~SPEN); // Disable SPI
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:333: SPCON&=(~SPEN); // Disable SPI
 	anl	_SPCON,#0xBF
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:344: SPCON=MSTR|CPOL|CPHA|SPR1|SPR0|SSDIS;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:334: SPCON=MSTR|CPOL|CPHA|SPR1|SPR0|SSDIS;
 	mov	_SPCON,#0x3F
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:345: SPCON|=SPEN; // Enable SPI
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:335: SPCON|=SPEN; // Enable SPI
 	orl	_SPCON,#0x40
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:347: CE=0; // Activate the MCP3004 ADC.
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:337: CE=0; // Activate the MCP3004 ADC.
 	clr	_P1_4
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:348: SPIWrite(channel|0x18);	// Send start bit, single/diff* bit, D2, D1, and D0 bits.
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:338: SPIWrite(channel|0x18);	// Send start bit, single/diff* bit, D2, D1, and D0 bits.
 	mov	a,#0x18
 	orl	a,r2
 	mov	dpl,a
 	lcall	_SPIWrite
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:349: for(adc=0; adc<10; adc++); // Wait for S/H to setup
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:339: for(adc=0; adc<10; adc++); // Wait for S/H to setup
 	mov	r2,#0x0A
 	mov	r3,#0x00
 L016003?:
@@ -2047,24 +2031,24 @@ L016009?:
 	mov	a,r2
 	orl	a,r3
 	jnz	L016003?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:350: SPIWrite(0x55); // Read bits 9 down to 4
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:340: SPIWrite(0x55); // Read bits 9 down to 4
 	mov	dpl,#0x55
 	lcall	_SPIWrite
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:351: adc=((SPDAT&0x3f)*0x100);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:341: adc=((SPDAT&0x3f)*0x100);
 	mov	a,#0x3F
 	anl	a,_SPDAT
 	mov	r3,a
 	mov	r2,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:352: SPIWrite(0x55);// Read bits 3 down to 0
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:342: SPIWrite(0x55);// Read bits 3 down to 0
 	mov	dpl,#0x55
 	push	ar2
 	push	ar3
 	lcall	_SPIWrite
 	pop	ar3
 	pop	ar2
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:353: CE=1; // Deactivate the MCP3004 ADC.
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:343: CE=1; // Deactivate the MCP3004 ADC.
 	setb	_P1_4
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:354: adc+=(SPDAT&0xf0); // SPDR contains the low part of the result. 
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:344: adc+=(SPDAT&0xf0); // SPDR contains the low part of the result. 
 	mov	a,#0xF0
 	anl	a,_SPDAT
 	mov	r4,a
@@ -2074,7 +2058,7 @@ L016009?:
 	mov	r2,a
 	mov	a,r5
 	addc	a,r3
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:355: adc>>=4;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:345: adc>>=4;
 	swap	a
 	xch	a,r2
 	swap	a
@@ -2085,7 +2069,7 @@ L016009?:
 	xch	a,r2
 	xrl	a,r2
 	xch	a,r2
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:357: return adc;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:347: return adc;
 	mov	dpl,r2
 	mov	dph,a
 	ret
@@ -2094,12 +2078,12 @@ L016009?:
 ;------------------------------------------------------------
 ;channel                   Allocated to registers 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:360: int voltage (unsigned char channel) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:350: int voltage (unsigned char channel) {
 ;	-----------------------------------------
 ;	 function voltage
 ;	-----------------------------------------
 _voltage:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:361: return ((GetADC(channel)*5)/1023.0) * 1000; // VCC=5.81V (measured)
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:351: return ((GetADC(channel)*5)/1023.0) * 1000; // VCC=5.81V (measured)
 	lcall	_GetADC
 	mov	__mulint_PARM_2,dpl
 	mov	(__mulint_PARM_2 + 1),dph
@@ -2155,47 +2139,47 @@ _voltage:
 ;------------------------------------------------------------
 ;value                     Allocated to registers 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:364: void lcdcmd(unsigned char value)  
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:354: void lcdcmd(unsigned char value)  
 ;	-----------------------------------------
 ;	 function lcdcmd
 ;	-----------------------------------------
 _lcdcmd:
 	mov	_P2,dpl
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:367: RS=0; RW=0; EN=1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:357: RS=0; RW=0; EN=1;
 	clr	_P4_4
 	clr	_P4_0
 	setb	_P0_7
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:368: delay(50);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:358: delay(50);
 	mov	dptr,#0x0032
 	lcall	_delay
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:369: EN=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:359: EN=0;
 	clr	_P0_7
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:370: delay(50);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:360: delay(50);
 	mov	dptr,#0x0032
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:371: return;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:361: return;
 	ljmp	_delay
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'display'
 ;------------------------------------------------------------
 ;value                     Allocated to registers 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:374: void display(unsigned char value)  
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:364: void display(unsigned char value)  
 ;	-----------------------------------------
 ;	 function display
 ;	-----------------------------------------
 _display:
 	mov	_P2,dpl
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:377: RS=1; EN=1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:367: RS=1; EN=1;
 	setb	_P4_4
 	setb	_P0_7
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:378: delay(500);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:368: delay(500);
 	mov	dptr,#0x01F4
 	lcall	_delay
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:379: EN=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:369: EN=0;
 	clr	_P0_7
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:380: delay(50);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:370: delay(50);
 	mov	dptr,#0x0032
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:381: return;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:371: return;
 	ljmp	_delay
 ;------------------------------------------------------------
 ;Allocation info for local variables in function 'delay'
@@ -2204,14 +2188,14 @@ _display:
 ;i                         Allocated to registers r4 r5 
 ;j                         Allocated to registers r6 r7 
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:384: void delay(unsigned int time)  //Time delay function
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:374: void delay(unsigned int time)  //Time delay function
 ;	-----------------------------------------
 ;	 function delay
 ;	-----------------------------------------
 _delay:
 	mov	r2,dpl
 	mov	r3,dph
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:387: for(i=0;i<time;i++)
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:377: for(i=0;i<time;i++)
 	mov	r4,#0x00
 	mov	r5,#0x00
 L020004?:
@@ -2221,7 +2205,7 @@ L020004?:
 	mov	a,r5
 	subb	a,r3
 	jnc	L020008?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:388: for(j=0;j<5;j++);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:378: for(j=0;j<5;j++);
 	mov	r6,#0x05
 	mov	r7,#0x00
 L020003?:
@@ -2232,7 +2216,7 @@ L020017?:
 	mov	a,r6
 	orl	a,r7
 	jnz	L020003?
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:387: for(i=0;i<time;i++)
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:377: for(i=0;i<time;i++)
 	inc	r4
 	cjne	r4,#0x00,L020004?
 	inc	r5
@@ -2243,18 +2227,18 @@ L020008?:
 ;Allocation info for local variables in function 'lcdinit'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:392: void lcdinit(void)         
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:382: void lcdinit(void)         
 ;	-----------------------------------------
 ;	 function lcdinit
 ;	-----------------------------------------
 _lcdinit:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:394: P2=0x00;                 
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:384: P2=0x00;
 	mov	_P2,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:395: RW=0; EN=0; RS=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:385: RW=0; EN=0; RS=0;
 	clr	_P4_0
 	clr	_P0_7
 	clr	_P4_4
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:396: delay(15000);display(0x30);delay(4500);display(0x30);delay(300);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:386: delay(15000);display(0x30);delay(4500);display(0x30);delay(300);
 	mov	dptr,#0x3A98
 	lcall	_delay
 	mov	dpl,#0x30
@@ -2265,7 +2249,7 @@ _lcdinit:
 	lcall	_display
 	mov	dptr,#0x012C
 	lcall	_delay
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:397: display(0x30);delay(650);lcdcmd(0x38);delay(50);lcdcmd(0x0F);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:387: display(0x30);delay(650);lcdcmd(0x38);delay(50);lcdcmd(0x0F);
 	mov	dpl,#0x30
 	lcall	_display
 	mov	dptr,#0x028A
@@ -2276,7 +2260,7 @@ _lcdinit:
 	lcall	_delay
 	mov	dpl,#0x0F
 	lcall	_lcdcmd
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:398: delay(50);lcdcmd(0x01);delay(50);lcdcmd(0x06);delay(50);lcdcmd(0x80);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:388: delay(50);lcdcmd(0x01);delay(50);lcdcmd(0x06);delay(50);lcdcmd(0x80);
 	mov	dptr,#0x0032
 	lcall	_delay
 	mov	dpl,#0x01
@@ -2289,74 +2273,74 @@ _lcdinit:
 	lcall	_delay
 	mov	dpl,#0x80
 	lcall	_lcdcmd
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:399: delay(50);
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:389: delay(50);
 	mov	dptr,#0x0032
 	ljmp	_delay
 ;------------------------------------------------------------
 ;Allocation info for local variables in function '_c51_external_startup'
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:402: unsigned char _c51_external_startup(void) {
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:392: unsigned char _c51_external_startup(void) {
 ;	-----------------------------------------
 ;	 function _c51_external_startup
 ;	-----------------------------------------
 __c51_external_startup:
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:403: P0M0=0;	P0M1=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:393: P0M0=0;	P0M1=0;
 	mov	_P0M0,#0x00
 	mov	_P0M1,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:404: P1M0=0;	P1M1=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:394: P1M0=0;	P1M1=0;
 	mov	_P1M0,#0x00
 	mov	_P1M1,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:405: P2M0=0;	P2M1=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:395: P2M0=0;	P2M1=0;
 	mov	_P2M0,#0x00
 	mov	_P2M1,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:406: P3M0=0;	P3M1=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:396: P3M0=0;	P3M1=0;
 	mov	_P3M0,#0x00
 	mov	_P3M1,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:407: AUXR=0B_0001_0001;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:397: AUXR=0B_0001_0001;
 	mov	_AUXR,#0x11
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:408: P4M0=0;	P4M1=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:398: P4M0=0;	P4M1=0;
 	mov	_P4M0,#0x00
 	mov	_P4M1,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:410: PCON|=0x80;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:400: PCON|=0x80;
 	orl	_PCON,#0x80
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:411: SCON = 0x52;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:401: SCON = 0x52;
 	mov	_SCON,#0x52
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:412: BDRCON=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:402: BDRCON=0;
 	mov	_BDRCON,#0x00
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:413: BRL=BRG_VAL;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:403: BRL=BRG_VAL;
 	mov	_BRL,#0xFA
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:414: BDRCON=BRR|TBCK|RBCK|SPD;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:404: BDRCON=BRR|TBCK|RBCK|SPD;
 	mov	_BDRCON,#0x1E
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:416: TR0=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:406: TR0=0;
 	clr	_TR0
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:417: TMOD=0x11;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:407: TMOD=0x11;
 	mov	_TMOD,#0x11
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:418: TH0=RH0=TIMER0_RELOAD_VALUE/0x100;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:408: TH0=RH0=TIMER0_RELOAD_VALUE/0x100;
 	mov	_RH0,#0xFC
 	mov	_TH0,#0xFC
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:419: TL0=RL0=TIMER0_RELOAD_VALUE%0x100;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:409: TL0=RL0=TIMER0_RELOAD_VALUE%0x100;
 	mov	_RL0,#0x67
 	mov	_TL0,#0x67
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:420: TR0=1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:410: TR0=1;
 	setb	_TR0
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:421: ET0=1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:411: ET0=1;
 	setb	_ET0
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:422: TR1=0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:412: TR1=0;
 	clr	_TR1
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:423: TH1=RH1=TIMER1_RELOAD_VALUE/0x100;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:413: TH1=RH1=TIMER1_RELOAD_VALUE/0x100;
 	mov	_RH1,#0xF8
 	mov	_TH1,#0xF8
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:424: TL1=RL1=TIMER1_RELOAD_VALUE%0x100;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:414: TL1=RL1=TIMER1_RELOAD_VALUE%0x100;
 	mov	_RL1,#0xCD
 	mov	_TL1,#0xCD
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:425: TR1=1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:415: TR1=1;
 	setb	_TR1
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:426: ET1=1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:416: ET1=1;
 	setb	_ET1
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:427: EA=1;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:417: EA=1;
 	setb	_EA
-;	C:\Users\Adam\Documents\GitHub\EECE281_DB\AutoDisplay.c:428: return 0;
+;	C:\Users\Dylan\Documents\GitHub\EECE281_DB\AutoDisplay.c:418: return 0;
 	mov	dpl,#0x00
 	ret
 	rseg R_CSEG
@@ -2365,29 +2349,32 @@ __c51_external_startup:
 
 	rseg R_CONST
 __str_0:
-	db 'PWR=%d SPD=%dcm/s'
-	db 0x00
-__str_1:
 	db '%ld'
 	db 0x0A
 	db 0x00
+__str_1:
+	db 'SPD=%dcm/s'
+	db 0x00
 __str_2:
+	db 'Travelled=%dcm'
+	db 0x00
+__str_3:
 	db 'Recieved flip command '
 	db 0x0A
 	db 0x00
-__str_3:
+__str_4:
 	db 'Received park command '
 	db 0x0A
 	db 0x00
-__str_4:
+__str_5:
 	db 'Received closer command '
 	db 0x0A
 	db 0x00
-__str_5:
+__str_6:
 	db 'Received farther command '
 	db 0x0A
 	db 0x00
-__str_6:
+__str_7:
 	db 'Received %d'
 	db 0x0A
 	db 0x00
