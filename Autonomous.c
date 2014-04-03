@@ -101,9 +101,9 @@ motor motorLeft, motorRight;
 void main (void) {
 	long command, delta, left, right;
 	int k=0;
-	char *u = malloc(20);
+	//char *u = malloc(20);
 	
-	lcdinit();
+	//lcdinit();
 	ET0 = 1;
 	distance = MED;
 	P0_5=1;
@@ -173,9 +173,9 @@ void main (void) {
 
 void timeISR (void) interrupt 3 {
 	systime++;
-	if (systime % 1000 == 0){
+	/*if (systime % 1000 == 0){
 		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
-	}
+	}*/
 }
 
 void motorISR (void) interrupt 1 { 
@@ -197,13 +197,9 @@ void motorISR (void) interrupt 1 {
 }
 
 int getDistance(int sensor){
-	long v;
+	int v;
 	v = voltage(sensor - 1);
-	if (sensor == 1) { //left wheel
-		return LEFTSCALINGFACTOR*(3000-v);
-	} else {
-		return RIGHTSCALINGFACTOR*(3000-v);
-	}
+	return 3000 - v;
 }
 
 void printCommand(int command){
@@ -308,16 +304,16 @@ unsigned char rx_byte (void) {
 	int v;
 	int k=0;
 	while (voltage(0)<MIN);
-	P0_5=!P0_5;
+	//P0_5=!P0_5;
 	val=0;
 	wait_one_and_half_bit_time();
 	for(j=0; j<4; j++) {
 		v=voltage(0);
 		val|=(v>MIN)?(0x01<<j):0x00;
-		P0_5=!P0_5;
+		//P0_5=!P0_5;
 		wait_bit_time();
 	}
-	P0_5=1;
+	//P0_5=1;
 	return val;
 }
 
@@ -421,7 +417,7 @@ unsigned char _c51_external_startup(void) {
     BRL=BRG_VAL;
     BDRCON=BRR|TBCK|RBCK|SPD;
     
-    RS=1; RW=1;
+    //RS=1; RW=1;
 	
 	TR0=0;
 	TMOD=0x11;

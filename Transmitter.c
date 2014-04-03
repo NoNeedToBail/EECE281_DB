@@ -77,7 +77,7 @@ void sendMessage (int message) {
 	
 	turnOff();
 	tempTime = time;
-	while(time < tempTime + 30); //3 "0"s as start bits
+	while(time < tempTime + 1000); //3 "0"s as start bits
 	turnOn();
 	tempTime = time;
 	while(time < tempTime + 10); //1 "1" as start bit
@@ -91,7 +91,6 @@ void sendMessage (int message) {
 }
 
 void main (void) {
-	int button = 0;
 	while (1)
 	{
 		if (BUTTON1 == PUSHED){
