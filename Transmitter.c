@@ -77,7 +77,7 @@ void sendMessage (int message) {
 	
 	turnOff();
 	tempTime = time;
-	while(time < tempTime + 1000); //3 "0"s as start bits
+	while(time < tempTime + 500); //3 "0"s as start bits
 	turnOn();
 	tempTime = time;
 	while(time < tempTime + 10); //1 "1" as start bit
