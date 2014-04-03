@@ -19,14 +19,16 @@
 #define M1N P0_3
 #define M2P P0_0
 #define M2N P0_1
-#define SHORT 600
-#define MED 800
-#define LONG 1000
+
 #define ERROR 1.2
-#define FLIP 0B_0000
+#define DISTMIN 400
+#define DISTMAX 2800
+
+#define FLIP 0B_0011
 #define CLOSE 0B_0110
-#define FAR 0B_0011
-#define PARK 0B_0101
+#define FAR 0B_1100
+#define PARK 0B_1001
+
 #define MIN 200
 #define RATIO 0.16 //ratio of cm/s per power
 
@@ -60,7 +62,6 @@ int getDistance(int sensor);
 unsigned int GetADC(unsigned char channel);
 
 unsigned char rx_byte ();
-int receive_command (void);
 void implement_command (int);
 void printCommand(int command);
 
@@ -74,7 +75,7 @@ typedef struct motor{
 
 volatile unsigned int pwmcount;
 volatile long unsigned systime = 0;
-int distance = SHORT;
+int distance = 1200;
 long unsigned travelled = 0;
 int totalpower = 50;
 int autonomous = 1;
@@ -87,7 +88,6 @@ void main (void) {
 	P0_5=1;
 
 	while (1) {
-		//printf("dist L = %5d dist R = %5d\n",getDistance(1),getDistance(2));
 		rec = 1;
 		for (i = 0; i < 4; i++){
 			if (voltage(0) > MIN){
@@ -105,7 +105,13 @@ void main (void) {
 			}
 
 			if (autonomous){
-				if (left > distance * ERROR){
+				if (left > right + 200){
+					motorRight.power = 0;
+					motorLeft.power = totalpower;
+				} else if (right > left + 200){
+					motorLeft.power = 0;
+					motorRight.power = totalpower;
+				} else if (left > distance * ERROR){
 					motorLeft.direction = FORWARD;
 					motorRight.direction = FORWARD;
 					motorLeft.power = totalpower;
@@ -123,23 +129,24 @@ void main (void) {
 		} else {
 			motorLeft.power = 0;
 			motorRight.power = 0;
-			printf("Command Receival\n");
-			command = receive_command();
-			printCommand(command);
-			//implement_command(command);
-			waitms(200); //just so we don't receive commands back to back
+			waitms(10); //this makes sure that the power change takes effect before shutting off the interrupt
+			command = rx_byte();
+			implement_command(command);
+			waitms(200); //prevents receiving commands back to back
 		}
 	}
 } 
 
 void timeISR (void) interrupt 3 {
 	systime++;
+	if (systime % 1000 == 0){
+		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
+	}
 }
 
 void motorISR (void) interrupt 1 {
 	if((pwmcount+=5) > 99){
 		pwmcount = 0;
-		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
 	}
 
 	if (orientation == REVERSE) {
@@ -178,6 +185,7 @@ void printCommand(int command){
 }
 
 void parallelpark () {
+	orientation=!orientation;
 	motorLeft.power = 85;
 	motorRight.power = 85;
 	motorLeft.direction = FORWARD;
@@ -200,6 +208,7 @@ void parallelpark () {
 
 	motorLeft.power = 0;
 	motorRight.power = 0;
+	orientation=!orientation;
 	return;
 }
 
@@ -208,7 +217,7 @@ void turn180 (void) {
 	motorRight.power = 50;
 	motorLeft.direction = FORWARD;
 	motorRight.direction = REVERSE;
-	waitms(2650);
+	waitms(3250); //2650
 
 	if(orientation==FORWARD) {
 		orientation=REVERSE;
@@ -218,10 +227,6 @@ void turn180 (void) {
 	motorLeft.power = 0;
 	motorRight.power = 0;
 	return;
-}
-
-int receive_command (void) {
-	return rx_byte();
 }
 
 void implement_command (int command) {
@@ -242,19 +247,10 @@ void implement_command (int command) {
 }
 
 void changeDistance(int change){
-	if(change) //1= get closer
-	{
-		if(distance == LONG)
-			distance = MED;
-		else if (distance == MED)
-			distance = SHORT;
-	}
-	else 
-	{
-		if(distance == MED)
-			distance = LONG;
-		if(distance == SHORT)
-			distance = MED;
+	if(change) {
+		if (distance > DISTMIN) distance -= 400;
+	} else {
+		if (distance < DISTMAX) distance += 400;
 	}
 }
 
