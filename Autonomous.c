@@ -1,11 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <at89lp51rd2.h>
-#include <8051.h>
-
-#define RS	P3_5
-#define RW	P3_7
-#define EN	P3_6
  
 #define CLK 22118400L
 #define BAUD 115200L
@@ -19,28 +14,21 @@
 
 #define FORWARD 1
 #define REVERSE 0
-#define DISTSCALE 50
+#define DISTSCALE 1/5
 #define M1P P0_2
 #define M1N P0_3
 #define M2P P0_0
 #define M2N P0_1
 #define SHORT 600
-#define MED 1500
-#define LONG 2500
-#define ERROR 1.1
+#define MED 800
+#define LONG 1000
+#define ERROR 1.2
 #define FLIP 0B_0000
 #define CLOSE 0B_0110
 #define FAR 0B_0011
 #define PARK 0B_0101
 #define MIN 200
-#define LEFTSCALINGFACTOR 1
-#define RIGHTSCALINGFACTOR 1
 #define RATIO 0.16 //ratio of cm/s per power
-
-//	LCD
-#define CLEAR 0x01
-#define FIRSTLINE 0x80
-#define SECONDLINE 0xC0
 
 //         LP51B    MCP3004
 
@@ -79,11 +67,6 @@ void printCommand(int command);
 void wait_bit_time (void);
 void wait_one_and_half_bit_time (void);
 
-void lcdinit(void);
-void display(unsigned char value);
-void lcdcmd(unsigned char value);
-void delay(unsigned int time);
-
 typedef struct motor{
 	int power;
 	int direction;
@@ -91,115 +74,93 @@ typedef struct motor{
 
 volatile unsigned int pwmcount;
 volatile long unsigned systime = 0;
-int distance;
-long travelled = 0;
+int distance = SHORT;
+long unsigned travelled = 0;
 int totalpower = 50;
-int autonomous = 0;
+int autonomous = 1;
 int orientation = FORWARD;
 motor motorLeft, motorRight;
 
 void main (void) {
-	long command, delta, left, right;
-	int k=0;
-	//char *u = malloc(20);
-	
-	//lcdinit();
-	ET0 = 1;
-	distance = MED;
+	long command, left, right;
+	int rec, i;
 	P0_5=1;
-	
+
 	while (1) {
-		right = getDistance(2);
-		printf("left mV=%d right mV=%d dist L = %5d dist R = %5d\n",voltage(0),voltage(1),getDistance(1),getDistance(2));
-	//	if (right > MIN){
+		//printf("dist L = %5d dist R = %5d\n",getDistance(1),getDistance(2));
+		rec = 1;
+		for (i = 0; i < 4; i++){
+			if (voltage(0) > MIN){
+				rec = 0;
+			}
+		}
+		if (!rec){
+			right = getDistance(2);
 			left = getDistance(1);
-			
+
 			if (orientation == REVERSE){
 				long temp = left;
 				left = right;
 				right = temp;
 			}
-			
+
 			if (autonomous){
-				delta = left - right;
-				
 				if (left > distance * ERROR){
 					motorLeft.direction = FORWARD;
 					motorRight.direction = FORWARD;
-					motorLeft.power = totalpower + DISTSCALE * delta;
-					motorRight.power = totalpower - DISTSCALE * delta;
+					motorLeft.power = totalpower;
+					motorRight.power = totalpower;
 				} else if (left < distance / ERROR){
 					motorLeft.direction = REVERSE;
 					motorRight.direction = REVERSE;
-					motorLeft.power = totalpower - DISTSCALE * delta;
-					motorRight.power = totalpower + DISTSCALE * delta;
+					motorLeft.power = totalpower;
+					motorRight.power = totalpower;
 				} else {
 					motorLeft.power = 0;
 					motorRight.power = 0;
 				}
 			}
-	/*	} else {
+		} else {
+			motorLeft.power = 0;
+			motorRight.power = 0;
+			printf("Command Receival\n");
 			command = receive_command();
 			printCommand(command);
-			implement_command(command);
-			//wait_one_and_half_bit_time();
+			//implement_command(command);
 			waitms(200); //just so we don't receive commands back to back
-		}*/
-		
-		/*if (systime % 1000 == 0){
-			sprintf(u, "Distance: %ldcm", travelled);
-			lcdcmd(CLEAR);          
-			lcdcmd(FIRSTLINE);
-			k = 0;
-			while(u[k]!='\0' && k < 15)
-			{
-				display(u[k]);
-				k++;
-			}
 		}
-		if (systime % 1000 == 500){
-			sprintf(u, "Speed: %dcm/s", (motorLeft.power + motorRight.power) / 2);
-			lcdcmd(CLEAR);          
-			lcdcmd(SECONDLINE);
-			k = 0;
-			while(u[k]!='\0' && k < 15)
-			{
-				display(u[k]);
-				k++;
-			}
-		}*/
 	}
 } 
 
 void timeISR (void) interrupt 3 {
 	systime++;
-	/*if (systime % 1000 == 0){
-		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
-	}*/
 }
 
-void motorISR (void) interrupt 1 { 
-	if((pwmcount+=5) > 99) pwmcount = 0;
-	
-	if (orientation == FORWARD) {
+void motorISR (void) interrupt 1 {
+	if((pwmcount+=5) > 99){
+		pwmcount = 0;
+		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
+	}
+
+	if (orientation == REVERSE) {
 		M1P = (motorLeft.power > pwmcount ? 1 : 0) * motorLeft.direction;
 		M1N = (motorLeft.power > pwmcount ? 1 : 0) * !motorLeft.direction;
-		
+
 		M2P = (motorRight.power > pwmcount ? 1 : 0) * motorRight.direction;
 		M2N = (motorRight.power > pwmcount ? 1 : 0) * !motorRight.direction;
 	} else {
 		M2P = (motorLeft.power > pwmcount ? 1 : 0) * !motorLeft.direction;
 		M2N = (motorLeft.power > pwmcount ? 1 : 0) * motorLeft.direction;
-		
+
 		M1P = (motorRight.power > pwmcount ? 1 : 0) * !motorRight.direction;
 		M1N = (motorRight.power > pwmcount ? 1 : 0) * motorRight.direction;
 	}
 }
 
 int getDistance(int sensor){
-	int v;
+	long v;
 	v = voltage(sensor - 1);
-	return 3000 - v;
+	return 3000-v;
 }
 
 void printCommand(int command){
@@ -222,21 +183,21 @@ void parallelpark () {
 	motorLeft.direction = FORWARD;
 	motorRight.direction = FORWARD;
 	waitms(1100);
-	
+
 	motorLeft.power = 50;
 	motorRight.power = 0;
 	motorLeft.direction = REVERSE;
 	motorRight.direction = REVERSE;
 	waitms(1000);
-	
+
 	motorLeft.power = 75;
 	motorRight.power = 75;
 	waitms(900);
-	
+
 	motorLeft.power = 0;
 	motorRight.power = 45;
 	waitms(1035);
-	
+
 	motorLeft.power = 0;
 	motorRight.power = 0;
 	return;
@@ -248,7 +209,7 @@ void turn180 (void) {
 	motorLeft.direction = FORWARD;
 	motorRight.direction = REVERSE;
 	waitms(2650);
-	
+
 	if(orientation==FORWARD) {
 		orientation=REVERSE;
 	} else {
@@ -260,9 +221,7 @@ void turn180 (void) {
 }
 
 int receive_command (void) {
-	int command;
-	command = rx_byte();
-	return command;
+	return rx_byte();
 }
 
 void implement_command (int command) {
@@ -303,17 +262,19 @@ unsigned char rx_byte (void) {
 	unsigned char j, val;
 	int v;
 	int k=0;
+	ET0 = 0;
 	while (voltage(0)<MIN);
-	//P0_5=!P0_5;
+	P0_5=!P0_5;
 	val=0;
 	wait_one_and_half_bit_time();
 	for(j=0; j<4; j++) {
 		v=voltage(0);
 		val|=(v>MIN)?(0x01<<j):0x00;
-		//P0_5=!P0_5;
+		P0_5=!P0_5;
 		wait_bit_time();
 	}
-	//P0_5=1;
+	P0_5=1;
+	ET0 = 1;
 	return val;
 }
 
@@ -333,7 +294,7 @@ void wait_one_and_half_bit_time(void) {
 	while (!(systime > time_start+14));
 	return;
 }
-	
+
 void SPIWrite(unsigned char value)
 {
 	SPSTA&=(~SPIF); // Clear the SPIF flag in SPSTA
@@ -348,7 +309,7 @@ unsigned int GetADC(unsigned char channel) {
 	SPCON&=(~SPEN); // Disable SPI
 	SPCON=MSTR|CPOL|CPHA|SPR1|SPR0|SSDIS;
 	SPCON|=SPEN; // Enable SPI
-	
+
 	CE=0; // Activate the MCP3004 ADC.
 	SPIWrite(channel|0x18);	// Send start bit, single/diff* bit, D2, D1, and D0 bits.
 	for(adc=0; adc<10; adc++); // Wait for S/H to setup
@@ -358,49 +319,12 @@ unsigned int GetADC(unsigned char channel) {
 	CE=1; // Deactivate the MCP3004 ADC.
 	adc+=(SPDAT&0xf0); // SPDR contains the low part of the result. 
 	adc>>=4;
-		
+
 	return adc;
 }
 
 int voltage (unsigned char channel) {
-	return ((GetADC(channel)*5.81)/1023.0) * 1000; // VCC=5.81V (measured)
-}
-
-void delay(unsigned int time)  //Time delay function
-{
-	unsigned int i,j;
-	for(i=0;i<time;i++)
-  		for(j=0;j<5;j++);
-}
-             //Function for sending values to the command register of LCD
-void lcdcmd(unsigned char value)  
-{
-	P1=value;
-	P3=0x40;
-	delay(50);
-	EN=0;
-	delay(50);
-	return;
-}
-             //Function for sending values to the data register of LCD
-void display(unsigned char value)  
-{
-	P1=value;
-	P3=0x60;
-	delay(500);
-	EN=0;
-	delay(50);
-	return;
-}
-             //function to initialize the registers and pins of LCD
-void lcdinit(void)         
-{
-	P1=0x00;                 
-	P3=0x00;
-     	delay(15000);display(0x30);delay(4500);display(0x30);delay(300);
-     	display(0x30);delay(650);lcdcmd(0x38);delay(50);lcdcmd(0x0F);
-	delay(50);lcdcmd(0x01);delay(50);lcdcmd(0x06);delay(50);lcdcmd(0x80);
-	delay(50);
+	return ((GetADC(channel)*5)/1023.0) * 1000; // VCC=5.81V (measured)
 }
 
 unsigned char _c51_external_startup(void) {
@@ -416,9 +340,7 @@ unsigned char _c51_external_startup(void) {
     BDRCON=0;
     BRL=BRG_VAL;
     BDRCON=BRR|TBCK|RBCK|SPD;
-    
-    //RS=1; RW=1;
-	
+
 	TR0=0;
 	TMOD=0x11;
 	TH0=RH0=TIMER0_RELOAD_VALUE/0x100;
