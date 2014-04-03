@@ -76,7 +76,7 @@ typedef struct motor{
 volatile unsigned int pwmcount;
 volatile long unsigned systime = 0;
 int distance = 1200;
-long unsigned travelled = 0;
+volatile long travelled = 0;
 int totalpower = 50;
 int autonomous = 1;
 int orientation = FORWARD;
@@ -88,6 +88,7 @@ void main (void) {
 	P0_5=1;
 
 	while (1) {
+		printf("%ld\n", travelled);
 		rec = 1;
 		for (i = 0; i < 4; i++){
 			if (voltage(0) > MIN){
@@ -105,10 +106,10 @@ void main (void) {
 			}
 
 			if (autonomous){
-				if (left > right + 200){
+				if (left > right + 300){
 					motorRight.power = 0;
 					motorLeft.power = totalpower;
-				} else if (right > left + 200){
+				} else if (right > left + 300){
 					motorLeft.power = 0;
 					motorRight.power = totalpower;
 				} else if (left > distance * ERROR){
@@ -139,14 +140,12 @@ void main (void) {
 
 void timeISR (void) interrupt 3 {
 	systime++;
-	if (systime % 1000 == 0){
-		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
-	}
 }
 
 void motorISR (void) interrupt 1 {
 	if((pwmcount+=5) > 99){
 		pwmcount = 0;
+		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
 	}
 
 	if (orientation == REVERSE) {
