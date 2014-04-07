@@ -89,11 +89,12 @@ int totalpower = 50;
 int autonomous = 1;
 int orientation = FORWARD;
 motor motorLeft, motorRight;
+char first_line[16];
+int k=0;
 
 void main (void) {
 	long command, left, right;
-	int rec, i, z=0, k=0;
-	char first_line[16];
+	int rec, i, z=0;
 	P0_5=1;
 
 	lcdinit();
@@ -149,7 +150,7 @@ void main (void) {
 		z++;
 		if(z >= 5){
 			z = 0;
-			sprintf(first_line, "SPD=%dcm/s", (int)((motorLeft.power + motorRight.power) / 2.0 * RATIO));
+			sprintf(first_line, "SPD=%dcm/s      ", (int)((motorLeft.power + motorRight.power) / 2.0 * RATIO));
 			lcdcmd(0x80);
 			k=0;
 			while(first_line[k]!='\0') {
@@ -228,7 +229,7 @@ void parallelpark () {
 
 	motorLeft.power = 75;
 	motorRight.power = 75;
-	waitms(900);
+	waitms(1200);
 
 	motorLeft.power = 0;
 	motorRight.power = 45;
@@ -245,7 +246,7 @@ void turn180 (void) {
 	motorRight.power = 50;
 	motorLeft.direction = FORWARD;
 	motorRight.direction = REVERSE;
-	waitms(3250); //2650
+	waitms(3600); //2650
 
 	if(orientation==FORWARD) {
 		orientation=REVERSE;
@@ -260,6 +261,13 @@ void turn180 (void) {
 void implement_command (int command) {
 	if (command == FLIP) {
 		autonomous = 0;
+		sprintf(first_line, "   FLIPPING...   ", (int)(travelled/100.0));             
+		lcdcmd(0x80);
+		k=0;
+		while(first_line[k]!='\0') {
+			display(first_line[k]);
+			k++;
+		}
 		turn180();
 		autonomous = 1;
 	} else if (command == CLOSE) {
@@ -268,6 +276,13 @@ void implement_command (int command) {
 		changeDistance(0);
 	} else if (command == PARK) {
 		autonomous = 0;
+		sprintf(first_line, "   PARKING...   ", (int)(travelled/100.0));             
+		lcdcmd(0x80);
+		k=0;
+		while(first_line[k]!='\0') {
+			display(first_line[k]);
+			k++;
+		}
 		parallelpark();
 		autonomous = 1;
 	} 
@@ -351,8 +366,7 @@ int voltage (unsigned char channel) {
 	return ((GetADC(channel)*5)/1023.0) * 1000; // VCC=5.81V (measured)
 }
 
-void lcdcmd(unsigned char value)  
-{
+void lcdcmd(unsigned char value) {
 	P2=value;
 	RS=0; RW=0; EN=1;
 	delay(50);
@@ -361,8 +375,7 @@ void lcdcmd(unsigned char value)
 	return;
 }
              //Function for sending values to the data register of LCD
-void display(unsigned char value)  
-{
+void display(unsigned char value) {
 	P2=value;
 	RS=1; EN=1;
 	delay(500);
@@ -371,20 +384,18 @@ void display(unsigned char value)
 	return;
 }
 
-void delay(unsigned int time)  //Time delay function
-{
+void delay(unsigned int time) { //Time delay function
 	unsigned int i,j;
 	for(i=0;i<time;i++)
   		for(j=0;j<5;j++);
 }
              //function to initialize the registers and pins of LCD
              //always use with every lcd of hitachi
-void lcdinit(void)         
-{
+void lcdinit(void) {
 	P2=0x00;
 	RW=0; EN=0; RS=0;
-     	delay(15000);display(0x30);delay(4500);display(0x30);delay(300);
-     	display(0x30);delay(650);lcdcmd(0x38);delay(50);lcdcmd(0x0F);
+	delay(15000);display(0x30);delay(4500);display(0x30);delay(300);
+	display(0x30);delay(650);lcdcmd(0x38);delay(50);lcdcmd(0x0F);
 	delay(50);lcdcmd(0x01);delay(50);lcdcmd(0x06);delay(50);lcdcmd(0x80);
 	delay(50);
 }
