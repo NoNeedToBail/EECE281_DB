@@ -6,10 +6,9 @@
 #define BAUD 115200L
 #define BRG_VAL (0x100-(CLK/(32L*BAUD)))
 
-//We want timer 0 to interrupt every 100 microseconds ((1/10000Hz)=100 us)
-#define FREQ 2000L
+#define FREQ 2000L //Allows us to filter down to a 100Hz PWM with reasonable precision on the power percentage
 #define TIMER0_RELOAD_VALUE (65536L-(CLK/(12L*FREQ)))
-#define FREQ1 1000L
+#define FREQ1 1000L //Gives us a millisecond timer
 #define TIMER1_RELOAD_VALUE (65536L-(CLK/(12L*FREQ1)))
 
 #define FORWARD 1
@@ -18,38 +17,25 @@
 #define M1N P0_3
 #define M2P P0_0
 #define M2N P0_1
-#define ERROR 1.2
-#define DISTMIN 400
-#define DISTMAX 2800
+#define ERROR 1.2 //Acceptable error in distance measurement
+#define DISTMIN 400 //Mimimum settable distance
+#define DISTMAX 2800 //Maximum settable distance
 
+//The four commands for the robot in binary
 #define FLIP 0B_0011
 #define CLOSE 0B_0110
 #define FAR 0B_1100
 #define PARK 0B_1001
 
-#define MIN 200
+#define MIN 200 //The cut-off threshold for what we consider to be logic 0
 #define RATIO 0.16 //ratio of cm/s per power
 
-#define RS	P4_4  //RS PIN OF THE DISPLAY
-#define RW	P4_0  //
+//Pins for the LCD display
+#define RS	P4_4
+#define RW	P4_0
 #define EN	P0_7
 
-
-//         LP51B    MCP3004
-
-//---------------------------
-
-// MISO  -  P1.5  - pin 10
-// SCK   -  P1.6  - pin 11
-// MOSI  -  P1.7  - pin 9
-// CE*   -  P1.4  - pin 8
-// 5V 	 -  VCC   - pins 13, 14
-// 0V    -  GND   - pins 7, 12
-// CH0   -        - pin 1
-// CH1   -        - pin 2
-// CH2   -        - pin 3
-// CH3   -        - pin 4
-
+//MCP 3004 pins
 #define MISO	P1_5
 #define SCK		P1_6
 #define MOSI	P1_7
@@ -95,52 +81,50 @@ int k=0;
 void main (void) {
 	long command, left, right;
 	int rec, i, z=0;
-	P0_5=1;
 
-	lcdinit();
+	lcdinit(); //initalizes LCD display
 
 	while (1) {
-		printf("%ld\n", travelled);
-		rec = 1;
-		for (i = 0; i < 4; i++){
-			if (voltage(0) > MIN){
-				rec = 0;
+		rec = 0; //Gets set to a 1 if magnetic field is being transmitted
+		for (i = 0; i < 4; i++){ //Prevents fluctuations from starting the signal receiving process
+			if (voltage(0) > MIN){ //If voltage is a logic one then we're not receiving a signal
+				rec = 1;
 			}
 		}
-		if (!rec){
+		if (rec){
 			right = getDistance(2);
 			left = getDistance(1);
 
-			if (orientation == REVERSE){
+			if (orientation == REVERSE){ //This allows us to abstract to the left motor and right motor, regardless of orientation
 				long temp = left;
 				left = right;
 				right = temp;
 			}
 
 			if (autonomous){
-				if (left > right + 300){
+				if (left > right + 300){ //Left wheel is too far back
 					motorRight.power = 0;
 					motorLeft.power = totalpower;
-				} else if (right > left + 300){
+				} else if (right > left + 300){ //Right wheel is too far back
 					motorLeft.power = 0;
 					motorRight.power = totalpower;
-				} else if (left > distance * ERROR){
+				} else if (left > distance * ERROR){ //Angle ok, robot too far away
 					motorLeft.direction = FORWARD;
 					motorRight.direction = FORWARD;
 					motorLeft.power = totalpower;
 					motorRight.power = totalpower;
-				} else if (left < distance / ERROR){
+				} else if (left < distance / ERROR){ //Robot too close
 					motorLeft.direction = REVERSE;
 					motorRight.direction = REVERSE;
 					motorLeft.power = totalpower;
 					motorRight.power = totalpower;
-				} else {
+				} else { //We're in the right spot
 					motorLeft.power = 0;
 					motorRight.power = 0;
 				}
 			}
 		} else {
-			motorLeft.power = 0;
+			motorLeft.power = 0; //Turn the motors off while waiting for command
 			motorRight.power = 0;
 			waitms(10); //this makes sure that the power change takes effect before shutting off the interrupt
 			command = rx_byte();
@@ -148,17 +132,17 @@ void main (void) {
 			waitms(200); //prevents receiving commands back to back
 		}
 		z++;
-		if(z >= 5){
+		if(z >= 5){ //Prevents LCD display from refreshing too fast and flickering
 			z = 0;
 			sprintf(first_line, "SPD=%dcm/s      ", (int)((motorLeft.power + motorRight.power) / 2.0 * RATIO));
-			lcdcmd(0x80);
+			lcdcmd(0x80); //Print on the first line
 			k=0;
 			while(first_line[k]!='\0') {
 				display(first_line[k]);
 				k++;
 			}
 			sprintf(first_line, "Travelled=%dcm", (int)(travelled/100.0));             
-			lcdcmd(0xC0);
+			lcdcmd(0xC0); //Print on the second line
 			k=0;
 			while(first_line[k]!='\0') {
 				display(first_line[k]);
@@ -168,14 +152,14 @@ void main (void) {
 	}
 } 
 
-void timeISR (void) interrupt 3 {
+void timeISR (void) interrupt 3 { //Timer 1 runs every millisecond and gives us a millisecond timer
 	systime++;
 }
 
 void motorISR (void) interrupt 1 {
-	if((pwmcount+=5) > 99){
+	if((pwmcount+=5) > 99){ //Frequency is 2000, 2000 / 5 = 100 for 100Hz PWM signal
 		pwmcount = 0;
-		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO;
+		travelled += (motorLeft.power + motorRight.power) / 2 * RATIO; //tracks the distance travelled
 	}
 
 	if (orientation == REVERSE) {
@@ -199,45 +183,33 @@ int getDistance(int sensor){
 	return 3000-v;
 }
 
-void printCommand(int command){
-	if(command==FLIP)
-		printf("Recieved flip command \n");
-	else if (command == PARK)
-		printf("Received park command \n");
-	else if (command == CLOSE)
-		printf("Received closer command \n");
-	else if (command == FAR)
-		printf("Received farther command \n");
-	else
-		printf("Received %d\n", command);
-	return;
-}
-
 void parallelpark () {
-	orientation=!orientation;
+	orientation=!orientation; //Code was originally programmed for the opposite orientation, this is a quick fix
+	
 	motorLeft.power = 85;
 	motorRight.power = 85;
 	motorLeft.direction = FORWARD;
 	motorRight.direction = FORWARD;
-	waitms(1100);
+	waitms(1100); //move back for 1100ms
 
 	motorLeft.power = 50;
 	motorRight.power = 0;
 	motorLeft.direction = REVERSE;
 	motorRight.direction = REVERSE;
-	waitms(1000);
+	waitms(1000); //Turn left 45 degrees
 
 	motorLeft.power = 75;
 	motorRight.power = 75;
-	waitms(1200);
+	waitms(1200); //Move forward
 
 	motorLeft.power = 0;
-	motorRight.power = 45;
-	waitms(1035);
+	motorRight.power = 50;
+	waitms(1000); //Turn right 45 degrees to straighten out
 
 	motorLeft.power = 0;
 	motorRight.power = 0;
-	orientation=!orientation;
+	
+	orientation=!orientation; //orientation is reset to original value
 	return;
 }
 
@@ -246,13 +218,10 @@ void turn180 (void) {
 	motorRight.power = 50;
 	motorLeft.direction = FORWARD;
 	motorRight.direction = REVERSE;
-	waitms(3600); //2650
+	waitms(3600);
 
-	if(orientation==FORWARD) {
-		orientation=REVERSE;
-	} else {
-		orientation=FORWARD;
-	}
+	orientation = !orientation;
+	
 	motorLeft.power = 0;
 	motorRight.power = 0;
 	return;
@@ -261,14 +230,14 @@ void turn180 (void) {
 void implement_command (int command) {
 	if (command == FLIP) {
 		autonomous = 0;
-		sprintf(first_line, "   FLIPPING...   ", (int)(travelled/100.0));             
-		lcdcmd(0x80);
+		sprintf(first_line, "   FLIPPING...   ", (int)(travelled/100.0)); //loads first_line with our message
+		lcdcmd(0x80); //print on first line
 		k=0;
 		while(first_line[k]!='\0') {
 			display(first_line[k]);
 			k++;
 		}
-		turn180();
+		turn180(); //flip the robot
 		autonomous = 1;
 	} else if (command == CLOSE) {
 		changeDistance(1);
@@ -289,6 +258,7 @@ void implement_command (int command) {
 	return;
 }
 
+//increases or decreases the distance based on whether the input is a 1 (get closer) or 0 (get farther)
 void changeDistance(int change){
 	if(change) {
 		if (distance > DISTMIN) distance -= 400;
@@ -301,22 +271,20 @@ unsigned char rx_byte (void) {
 	unsigned char j, val;
 	int v;
 	int k=0;
-	ET0 = 0;
+	ET0 = 0; //Timing is sensitive and we don't need the motors right now + motors are off
 	while (voltage(0)<MIN);
-	P0_5=!P0_5;
 	val=0;
-	wait_one_and_half_bit_time();
+	wait_one_and_half_bit_time(); //Sample in the middle of the bits for less error
 	for(j=0; j<4; j++) {
 		v=voltage(0);
 		val|=(v>MIN)?(0x01<<j):0x00;
-		P0_5=!P0_5;
 		wait_bit_time();
 	}
-	P0_5=1;
 	ET0 = 1;
 	return val;
 }
 
+//systime is a measure of milliseconds and all these functions wait on it to increment
 void waitms(long time){
 	long time1= systime+time;
 	while(!(time1 < systime));
@@ -324,13 +292,13 @@ void waitms(long time){
 
 void wait_bit_time (void) {
 	long time_start=systime;
-	while (!(systime > time_start+9));
+	while (!(systime > time_start+9)); //bit is 10ms but other code runs as well so this prevents us from losing ground over time
 	return;
 }
 
 void wait_one_and_half_bit_time(void) {
 	long time_start=systime;
-	while (!(systime > time_start+14));
+	while (!(systime > time_start+14)); //same as above but for 1.5 bits
 	return;
 }
 
@@ -363,7 +331,7 @@ unsigned int GetADC(unsigned char channel) {
 }
 
 int voltage (unsigned char channel) {
-	return ((GetADC(channel)*5)/1023.0) * 1000; // VCC=5.81V (measured)
+	return ((GetADC(channel)*5)/1023.0) * 1000; // VCC=5V (measured)
 }
 
 void lcdcmd(unsigned char value) {
@@ -374,7 +342,8 @@ void lcdcmd(unsigned char value) {
 	delay(50);
 	return;
 }
-             //Function for sending values to the data register of LCD
+
+//Function for sending values to the data register of LCD
 void display(unsigned char value) {
 	P2=value;
 	RS=1; EN=1;
@@ -389,8 +358,8 @@ void delay(unsigned int time) { //Time delay function
 	for(i=0;i<time;i++)
   		for(j=0;j<5;j++);
 }
-             //function to initialize the registers and pins of LCD
-             //always use with every lcd of hitachi
+
+//function to initialize the registers and pins of LCD
 void lcdinit(void) {
 	P2=0x00;
 	RW=0; EN=0; RS=0;
