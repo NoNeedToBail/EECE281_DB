@@ -5,9 +5,9 @@
 #define CLK 22118400L
 #define BAUD 115200L
 #define BRG_VAL (0x100-(CLK/(32L*BAUD)))
-#define FREQ 30400L
+#define FREQ 30400L //This is double the resonant frequency of our transmitter circuit
 #define TIMER0_RELOAD_VALUE (65536L-(CLK/(12L*FREQ)))
-#define FREQ1 1000
+#define FREQ1 1000 //This gives us a millisecond clock
 #define TIMER1_RELOAD_VALUE (65536L-(CLK/(12L*FREQ1)))
 
 #define BUTTON1 P0_0
@@ -62,12 +62,12 @@ void turnOn (void) {
 	ET0 = 1;
 }
 
-void signalGen (void) interrupt 1 {
-	HPIN2 = HPIN1;
+void signalGen (void) interrupt 1 { //Alternates the 2 defined pins to provide opposite square waves.
+	HPIN2 = HPIN1; //Doing it this way means that starting with both pins as the same value doesn't cause the code to fail.
 	HPIN1 = !HPIN1;
 }
 
-void sysTime (void) interrupt 3 {
+void sysTime (void) interrupt 3 { //Timer 1 interrupts at 1000Hz so this gives us a millisecond timer.
 	time++;
 }
 
@@ -77,20 +77,20 @@ void sendMessage (int message) {
 	
 	turnOff();
 	tempTime = time;
-	while(time < tempTime + 500); //3 "0"s as start bits
+	while(time < tempTime + 1000); //1 second of logic 0 as start bits - this ensures that the robot doesn't miss the message
 	turnOn();
 	tempTime = time;
-	while(time < tempTime + 10); //1 "1" as start bit
+	while(time < tempTime + 10); //1 "1" as start bit, this is not part of the data
 	for (i = 0; i < 4; i++) {
-		ET0 = message & 1;
-		message >>= 1;
+		ET0 = message & 1; //Sends the lowest order bit of message
+		message >>= 1; //Discards the lowest order bit
 		tempTime = time;
 		while(time < tempTime + 10); //send each bit for 10ms
 	}
-	turnOn();
+	turnOn(); //Message is now transmitted, transmitter should go back to being on indefinitely
 }
 
-void main (void) {
+void main (void) { //Checks for push button input, and sends messages accordingly
 	while (1)
 	{
 		if (BUTTON1 == PUSHED){
@@ -106,7 +106,7 @@ void main (void) {
 			while(BUTTON4 == PUSHED);
 			sendMessage(PARK);
 		} else {
-			turnOn();
+			turnOn(); //Just in case the transmitter gets turned off in another piece of code.
 		}
 	}
 }
